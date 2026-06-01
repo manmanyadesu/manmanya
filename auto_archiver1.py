@@ -7,7 +7,7 @@ import shutil
 import requests
 import httplib2
 import subprocess
-import socket # 무한 멈춤 방지용 소켓 설정 추가
+import socket
 import google_auth_httplib2
 from PIL import Image
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -20,7 +20,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
-# ⚠️ 구글 및 인터넷 지연으로 인한 무한 멈춤을 원천 방지하기 위해 20초 강제 타임아웃을 설정합니다.
+# 구글 API 무한 대기 방지용 20초 강제 타임아웃
 socket.setdefaulttimeout(20)
 
 # ==========================================
@@ -29,7 +29,7 @@ socket.setdefaulttimeout(20)
 GALLERY_ID = "comic_new6"
 START_PAGE = 1
 END_PAGE = 2
-MAX_POSTS_TO_ARCHIVE = 1  # ⚠️ 1개 테스트용
+MAX_POSTS_TO_ARCHIVE = 2  # 테스트용 1개 수집
 
 # 강제 재수집 대기열
 FORCE_REARCHIVE_POST_NOS = ["4600069"]
@@ -69,13 +69,11 @@ def get_gcp_credentials():
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+        if creds and creds.expired and creds.refresh_token: creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file('client_secret.json', SCOPES)
             creds = flow.run_local_server(port=0)
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+        with open('token.json', 'w') as token: token.write(creds.to_json())
     return creds
 
 def load_checkpoint():
@@ -125,6 +123,7 @@ def upload_file_to_drive(drive_service, file_path, folder_id, thread_http):
     mime_type = "image/jpeg"
     if filename.endswith(".gif"): mime_type = "image/gif"
     elif filename.endswith(".png"): mime_type = "image/png"
+    elif filename.endswith(".html"): mime_type = "text/html"
     
     media = MediaFileUpload(file_path, mimetype=mime_type, resumable=False)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute(http=thread_http)
@@ -152,12 +151,12 @@ def archive_single_post(post_no, page, drive_service, creds):
 
     print(f"\n▶ [{post_no}번 글] 디시 만화 수집 및 압축 구글 드라이브 전송 시작")
     try:
-        # 무한 대기를 막기 위해 페이지 이동 시 20초 타임아웃을 지정합니다.
+        # ⚠️ 타임아웃 20초 및 강제 돔파싱 진입
         page.goto(target_url, timeout=20000, wait_until="domcontentloaded")
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         time.sleep(1.0)
     except Exception as e:
-        print(f"      ⚠️ 페이지 로드 시간 초과 (수집 강제 계속 진행): {e}")
+        print(f"      ⚠️ 페이지 이동 대기 초과 (수집 강제 속행): {e}")
 
     full_html = page.content()
     soup = BeautifulSoup(full_html, "html.parser")
@@ -219,7 +218,6 @@ def archive_single_post(post_no, page, drive_service, creds):
                 compressed_path = f"{img_dir}/manga_{idx+1}.jpg"
                 compress_image(raw_path, compressed_path)
                 
-                # ⚠️ 통신 충돌 방지용 스레드 개별 승인 채널(AuthorizedHttp) 적용!
                 thread_http = google_auth_httplib2.AuthorizedHttp(creds, http=httplib2.Http())
                 file_id, direct_link = upload_file_to_drive(drive_service, compressed_path, folder_id, thread_http)
                 
@@ -353,14 +351,13 @@ def archive_single_post(post_no, page, drive_service, creds):
 
     with open(html_path, "w", encoding="utf-8") as f: f.write(html_template)
     
-    # [수정] 책장에 "추천", "댓글", "이미지 수"가 모두 보존되어 표시되도록 업데이트합니다.
     post_meta = {
         "title": title,
         "date": date_top,
         "views": views_val,
         "recommend": recommend_val,
-        "comment_count": current_cmt_count, # 댓글 개수
-        "image_count": len(img_tags),       # 이미지 장수
+        "comment_count": current_cmt_count,
+        "image_count": len(img_tags),
         "thumbnail": thumbnail_url
     }
 
@@ -376,7 +373,10 @@ with sync_playwright() as p:
     list_page = browser.new_page()
     post_page = browser.new_page()
     
-    # ⚠️ 랙을 피하기 위해, 스타일시트(CSS) 차단을 해제하고 오직 폰트와 비디오 미디어만 제한 차단합니다!
+    # ⚠️ 브라우저 경고창(Alert/Confirm) 팝업을 감지하자마자 자동으로 무시하고 닫아 무한 정체를 원천 해결합니다!
+    list_page.on("dialog", lambda dialog: dialog.dismiss())
+    post_page.on("dialog", lambda dialog: dialog.dismiss())
+    
     def block_heavy_resources(route):
         if route.request.resource_type in ["font", "media"]: route.abort()
         else: route.continue_()
@@ -395,7 +395,7 @@ with sync_playwright() as p:
             print(f"\n==========================================")
             print(f" 📖 개념글 {page_num}페이지 탐색 중...")
             list_page.goto(f"https://gall.dcinside.com/board/lists/?id={GALLERY_ID}&exception_mode=recommend&page={page_num}")
-            list_page.wait_for_load_state("domcontentloaded") # 고속 로딩
+            list_page.wait_for_load_state("domcontentloaded")
             
             soup = BeautifulSoup(list_page.content(), "html.parser")
             for row in soup.select("tr.us-post:not(.notice)"):
@@ -440,7 +440,6 @@ with sync_playwright() as p:
         release_lock()
         browser.close()
         
-        # 🚀 자동 배포 가동
         print("\n🚀 수집된 아카이브 데이터를 GitHub Pages로 전송합니다...")
         subprocess.run("git add .", shell=True)
         subprocess.run('git commit -m "Auto Update with compressed images"', shell=True)
