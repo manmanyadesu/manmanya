@@ -4,13 +4,13 @@
 GALLERY_ID = "comic_new6"               # 디시인사이드 갤러리 ID
 START_PAGE = 1                          # 기본 시작 페이지
 END_PAGE = 2                            # 기본 종료 페이지
-MAX_POSTS_TO_ARCHIVE = 8                # 기본 최대 수집 수량 (0 이면 제한 없음)
+MAX_POSTS_TO_ARCHIVE = 10                # 기본 최대 수집 수량 (0 이면 제한 없음)
 
-# 🚀 [콘솔/테스트 모드 전용 토글]
-CLI_MODE = True                        # True로 변경하면 GUI 창 없이 옛날처럼 콘솔에서 즉시 수집을 시작합니다.
-FORCE_TEMPLATE_REBUILD = True          # True로 변경하면 구글드라이브 이미지 전송을 패스하고 템플릿만 초고속 일괄 갱신합니다.
+# 🚀 [템플릿 초고속 갱신용 토글]
+# True로 설정 시 이미지 업로드를 생략하고 기존 드라이브 주소로 HTML 디자인만 즉시 교체합니다.
+FORCE_TEMPLATE_REBUILD = False          
 
-# 강제 전체 재수집(초기화) 대상 글 번호 목록
+# 강제 전체 재수집(초기화) 대상 글 번호 목록 (이미지 다시 다운로드/업로드 진행)
 FORCE_REARCHIVE_POST_NOS = ["4605771"]
 
 # 구글 드라이브 및 로컬 백업 경로 설정
@@ -18,7 +18,6 @@ SCOPES = ['https://www.googleapis.com/auth/drive.file']
 BASE_DIR = "./archive"
 CHECKPOINT_FILE = f"{BASE_DIR}/completed_posts.json"
 LOCK_FILE = f"{BASE_DIR}/crawler.lock"
-SETTINGS_FILE = f"{BASE_DIR}/gui_settings.json"
 # ==============================================================================
 
 import os
@@ -32,15 +31,12 @@ import requests
 import httplib2
 import subprocess
 import socket
-import threading
-import tkinter as tk
-from tkinter import ttk, messagebox
-import google_auth_httplib2
-from PIL import Image
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
+from PIL import Image
 
+import google_auth_httplib2
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
@@ -51,19 +47,38 @@ socket.setdefaulttimeout(15)
 
 os.makedirs(BASE_DIR, exist_ok=True)
 
-# GUI 로그 출력을 위한 리다이렉터 클래스
-class TextRedirector:
-    def __init__(self, text_widget):
-        self.text_widget = text_widget
-    def write(self, str):
-        self.text_widget.insert(tk.END, str)
-        self.text_widget.see(tk.END)
-    def flush(self):
-        pass
+# 깃허브 Pages 차단 우회를 위한 .nojekyll 자동 생성
+if not os.path.exists(".nojekyll"):
+    try:
+        with open(".nojekyll", "w") as f: pass
+        print("ℹ️ 깃허브 Pages 차단 방지용 .nojekyll 파일을 생성했습니다.")
+    except Exception: pass
 
-# ==========================================
-# [ 백엔드 핵심 수집 엔진 ]
-# ==========================================
+# 중복 실행 방지 락 시스템
+if os.path.exists(LOCK_FILE):
+    try:
+        with open(LOCK_FILE, "r") as f:
+            old_pid = int(f.read().strip())
+        is_running = False
+        try:
+            out = subprocess.check_output(f'tasklist /FI "PID eq {old_pid}"', shell=True, stderr=subprocess.DEVNULL)
+            out_str = out.decode('utf-8', errors='ignore') + out.decode('cp949', errors='ignore')
+            for line in out_str.splitlines():
+                if str(old_pid) in line:
+                    is_running = True
+                    break
+        except Exception: is_running = False
+        if is_running:
+            print(f"⚠️ 이미 다른 크롤러 인스턴스(PID: {old_pid})가 작동 중입니다. 실행을 중단합니다.")
+            exit()
+        else:
+            os.remove(LOCK_FILE)
+    except Exception:
+        try: os.remove(LOCK_FILE)
+        except Exception: pass
+
+with open(LOCK_FILE, "w") as f: f.write(str(os.getpid()))
+
 def get_gcp_credentials():
     creds = None
     if os.path.exists('token.json'):
@@ -147,12 +162,13 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     thumbnail_url = ""
     poll_drive_url = ""
 
+    # 실시간 최신 통계 데이터 크롤링
     try:
         page.goto(target_url, timeout=20000, wait_until="domcontentloaded")
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         time.sleep(1.0)
     except Exception as e:
-        print(f"      ⚠️ 로딩 대기 초과 (작업 강제 수행): {e}")
+        print(f"      ⚠️ 로딩 대기 제한 초과 (수집 강제 수행): {e}")
 
     full_html = page.content()
     soup = BeautifulSoup(full_html, "html.parser")
@@ -160,7 +176,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
         print(f" ❌ [{post_no}번 글] 원본 글을 찾을 수 없습니다.")
         return False, None
 
-    # 실시간 최신 통계 데이터 크롤링
     title_el = soup.find("span", class_="title_subject")
     title = title_el.text.strip() if title_el else f"만화 {post_no}번"
     writer_el = soup.select_one(".gall_writer .nickname")
@@ -186,9 +201,9 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     down_el = soup.select_one(".down_num")
     downvotes = down_el.text.strip() if down_el else "0"
 
-    # 🔄 [댓글 동기화 / 템플릿만 초고속 갱신 모드] 이미지 전송 단계를 생략하고 HTML만 재생성
+    # 🔄 [댓글 동기화 / 템플릿만 갱신 모드] 이미지 다운로드/업로드 단계를 생략하고 HTML만 재생성
     if update_comments_only and os.path.exists(html_path):
-        print(f"🔄 [{post_no}번 글] 이미지 전송 패스 및 템플릿 초고속 재빌드 중...")
+        print(f"🔄 [{post_no}번 글] 이미지 전송 생략 및 디자인/댓글 초고속 갱신 중...")
         try:
             with open(html_path, "r", encoding="utf-8") as f:
                 old_soup = BeautifulSoup(f.read(), "html.parser")
@@ -262,10 +277,10 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 res = f.result()
                 if res: uploaded_results.append(res)
 
-        # 🛡️ [자가 치유 안전 장치] 업로드 누락 발생 시, 완료 등록을 거부하고 수동 데이터 파괴 방지
+        # 🛡️ [자가 치유 안전 장치] 업로드에 결함 발생 시 완료 대조군 등록을 차단
         if len(uploaded_results) < len(downloaded_mangas) or len(downloaded_mangas) == 0:
-            print(f" ⚠️ [{post_no}번 글] 일부 만화 이미지 전송 실패 ({len(uploaded_results)}/{len(downloaded_mangas)} 성공)")
-            print("   안전을 위해 본 게시글을 미완료 상태로 두고 다음 실행 때 안전하게 처음부터 재시도합니다.")
+            print(f" ⚠️ [{post_no}번 글] 일부 이미지 전송 실패 ({len(uploaded_results)}/{len(downloaded_mangas)} 성공)")
+            print("   안전을 위해 본 게시글을 미완료 상태로 두고 다음 실행 시 다시 수집하도록 제외합니다.")
             shutil.rmtree(img_dir, ignore_errors=True)
             return False, None
 
@@ -297,7 +312,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 has_poll = True
             except Exception: pass
 
-    # 댓글 실시간 수집
+    # 댓글 수집
     collected_comments = []
     seen_comment_ids = set()
     current_cmt_page = 1
@@ -422,14 +437,17 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                     else:
                         is_completed = post_no in completed_posts
                     
+                    # 🛡️ [수정 적용] 템플릿 재생성 모드일 때, 강제 재수집 대상 글(is_completed=False)은 이 조건문을 우회하여 '정상 다운로드'로 진입하게 설계
                     if force_template_rebuild:
                         if is_completed:
                             success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, update_comments_only=True)
                             if success:
                                 completed_posts[post_no]["comment_count"] = current_cmt_count
                                 archive_count += 1
-                        continue
+                            continue # 템플릿만 갱신 후 루프 재개
+                        # is_completed가 False(즉 강제 재수집 대상)인 경우에는 아래의 일반 가동 로직(전체 다운로드)으로 진입!
 
+                    # 일반 가동 로직
                     if is_completed:
                         saved_cmt_count = completed_posts[post_no].get("comment_count", 0)
                         if current_cmt_count <= saved_cmt_count: continue
@@ -439,10 +457,10 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                         success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, update_comments_only=False)
                         if success:
                             completed_posts[post_no] = {"comment_count": current_cmt_count, **post_meta}
+                            archive_count += 1
 
                     if success:
                         save_checkpoint(completed_posts)
-                        archive_count += 1
                         time.sleep(round(random.uniform(1.5, 3.0), 1))
 
                 if max_p and archive_count >= max_p: break
@@ -455,186 +473,24 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
             
             print("\n🚀 데이터 GitHub Pages 배포 시도 중...")
             subprocess.run("git add .", shell=True)
-            subprocess.run('git commit -m "Auto Update with restored template structures"', shell=True)
+            subprocess.run('git commit -m "Auto Update with completely resolved forced re-archive logics"', shell=True)
             subprocess.run("git push", shell=True)
             print("🎉 배포가 완전히 완료되었습니다!")
-
-# ==========================================
-# [ GUI 메인 윈도우 인터페이스 ]
-# ==========================================
-class AppGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("만갤 아카이브 관리 콘솔")
-        self.root.geometry("640x700")
-        self.root.resizable(False, False)
-        
-        # 최상단 설정 전역 상수로 GUI 변수 세팅
-        self.start_page_var = tk.StringVar(value=str(START_PAGE))
-        self.end_page_var = tk.StringVar(value=str(END_PAGE))
-        self.max_posts_var = tk.StringVar(value=str(MAX_POSTS_TO_ARCHIVE))
-        self.force_nos_var = tk.StringVar(value=",".join(FORCE_REARCHIVE_POST_NOS))
-        self.schedule_type_var = tk.StringVar(value="하루 2번")
-        self.force_template_var = tk.BooleanVar(value=False)
-        
-        self.load_settings()
-        self.create_widgets()
-        
-    def create_widgets(self):
-        lbl_frame = tk.LabelFrame(self.root, text="⚙️ 수집기 설정", font=("Malgun Gothic", 10, "bold"), padx=15, pady=10)
-        lbl_frame.pack(fill="x", padx=15, pady=10)
-        
-        tk.Label(lbl_frame, text="시작 페이지:").grid(row=0, column=0, sticky="w", pady=5)
-        tk.Entry(lbl_frame, textvariable=self.start_page_var, width=10).grid(row=0, column=1, sticky="w", padx=10, pady=5)
-        
-        tk.Label(lbl_frame, text="종료 페이지:").grid(row=0, column=2, sticky="w", pady=5)
-        tk.Entry(lbl_frame, textvariable=self.end_page_var, width=10).grid(row=0, column=3, sticky="w", padx=10, pady=5)
-        
-        tk.Label(lbl_frame, text="최대 수집글 수:").grid(row=1, column=0, sticky="w", pady=5)
-        tk.Entry(lbl_frame, textvariable=self.max_posts_var, width=10).grid(row=1, column=1, sticky="w", padx=10, pady=5)
-        
-        tk.Checkbutton(lbl_frame, text="구글드라이브 업로드 생략, 기존 이미지 주소로 템플릿만 일괄 갱신", variable=self.force_template_var, fg="#1d4ed8", font=("Malgun Gothic", 9, "bold")).grid(row=1, column=2, columnspan=2, sticky="w", padx=10)
-        
-        tk.Label(lbl_frame, text="강제 재수집 번호:").grid(row=2, column=0, sticky="w", pady=5)
-        tk.Entry(lbl_frame, textvariable=self.force_nos_var, width=40).grid(row=2, column=1, columnspan=3, sticky="w", padx=10, pady=5)
-        tk.Label(lbl_frame, text="* 여러 개 일 때 반점(,)으로 구분", fg="gray50").grid(row=3, column=1, columnspan=3, sticky="w", padx=10)
-
-        sched_frame = tk.LabelFrame(self.root, text="📅 백그라운드 자동 가동 스케줄러", font=("Malgun Gothic", 10, "bold"), padx=15, pady=10)
-        sched_frame.pack(fill="x", padx=15, pady=10)
-        
-        tk.Label(sched_frame, text="가동 주기 선택:").pack(side="left", padx=5)
-        options = ["하루 1번 (정오)", "하루 2번 (12시간 간격)", "매 1시간마다 (24시간 상시 체크)"]
-        self.combo_sched = ttk.Combobox(sched_frame, textvariable=self.schedule_type_var, values=options, state="readonly", width=25)
-        self.combo_sched.pack(side="left", padx=10)
-        
-        btn_frame = tk.Frame(self.root)
-        btn_frame.pack(fill="x", padx=15, pady=5)
-        
-        self.btn_run = tk.Button(btn_frame, text="⚡ 아카이빙 즉시 시작", font=("Malgun Gothic", 10, "bold"), bg="#1d4ed8", fg="white", height=2, command=self.start_manual_thread)
-        self.btn_run.pack(side="left", fill="x", expand=True, padx=5)
-        
-        tk.Button(btn_frame, text="⏰ 자동 가동등록", font=("Malgun Gothic", 10, "bold"), bg="#10b981", fg="white", height=2, command=self.register_scheduler).pack(side="left", fill="x", expand=True, padx=5)
-        tk.Button(btn_frame, text="🛑 등록 해제", font=("Malgun Gothic", 10, "bold"), bg="#ef4444", fg="white", height=2, command=self.unregister_scheduler).pack(side="left", fill="x", expand=True, padx=5)
-
-        log_frame = tk.LabelFrame(self.root, text="📋 실시간 작업 로그", font=("Malgun Gothic", 10, "bold"), padx=5, pady=5)
-        log_frame.pack(fill="both", expand=True, padx=15, pady=10)
-        
-        self.log_text = tk.Text(log_frame, bg="#0f172a", fg="#f8fafc", font=("Consolas", 9), wrap="word")
-        self.log_text.pack(fill="both", expand=True, side="left")
-        
-        scroll = tk.Scrollbar(log_frame, command=self.log_text.yview)
-        scroll.pack(side="right", fill="y")
-        self.log_text.config(yscrollcommand=scroll.set)
-        
-        sys.stdout = TextRedirector(self.log_text)
-        sys.stderr = TextRedirector(self.log_text)
-        
-    def load_settings(self):
-        if os.path.exists(SETTINGS_FILE):
-            try:
-                with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.start_page_var.set(data.get("start_page", str(START_PAGE)))
-                    self.end_page_var.set(data.get("end_page", str(END_PAGE)))
-                    self.max_posts_var.set(data.get("max_posts", str(MAX_POSTS_TO_ARCHIVE)))
-                    self.force_nos_var.set(data.get("force_nos", ",".join(FORCE_REARCHIVE_POST_NOS)))
-                    self.schedule_type_var.set(data.get("schedule_type", "하루 2번"))
-                    self.force_template_var.set(data.get("force_template", False))
-            except Exception: pass
-            
-    def save_settings(self):
-        data = {
-            "start_page": self.start_page_var.get(),
-            "end_page": self.end_page_var.get(),
-            "max_posts": self.max_posts_var.get(),
-            "force_nos": self.force_nos_var.get(),
-            "schedule_type": self.schedule_type_var.get(),
-            "force_template": self.force_template_var.get()
-        }
-        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
-
-    def start_manual_thread(self):
-        self.save_settings()
-        self.btn_run.config(state="disabled")
-        self.log_text.delete("1.0", tk.END)
-        
-        def run():
-            try:
-                run_archiver_logic(
-                    int(self.start_page_var.get()),
-                    int(self.end_page_var.get()),
-                    int(self.max_posts_var.get()),
-                    self.force_nos_var.get(),
-                    self.force_template_var.get()
-                )
-            except Exception as e:
-                print(f"❌ 작업 에러: {e}")
-            finally:
-                self.root.after(0, lambda: self.btn_run.config(state="normal"))
-                
-        t = threading.Thread(target=run)
-        t.daemon = True
-        t.start()
-
-    def get_current_exe_cmd(self):
-        if getattr(sys, 'frozen', False):
-            exe_path = sys.executable
-            return f'"{exe_path}" --cron'
-        else:
-            py_path = sys.executable
-            script_path = os.path.abspath(sys.argv[0])
-            return f'"{py_path}" "{script_path}" --cron'
-
-    def register_scheduler(self):
-        self.save_settings()
-        self.unregister_scheduler(silent=True)
-        
-        target_cmd = self.get_current_exe_cmd()
-        sched_type = self.schedule_type_var.get()
-        task_name = "MangaArchive_AutoTask"
-        
-        if "하루 1번" in sched_type:
-            cmd = f'schtasks /create /tn "{task_name}" /tr "{target_cmd}" /sc DAILY /st 12:00 /f'
-        elif "하루 2번" in sched_type:
-            cmd = f'schtasks /create /tn "{task_name}" /tr "{target_cmd}" /sc HOURLY /mo 12 /f'
-        else:
-            cmd = f'schtasks /create /tn "{task_name}" /tr "{target_cmd}" /sc HOURLY /mo 1 /f'
-            
-        try:
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            if result.returncode == 0:
-                messagebox.showinfo("등록 완료", f"윈도우 백그라운드 자동 등록이 완료되었습니다!\n주기: {sched_type}")
-            else:
-                messagebox.showerror("등록 실패", f"스케줄러 등록 실패: {result.stderr}")
-        except Exception as e:
-            messagebox.showerror("에러", f"명령 가동 실패: {e}")
-
-    def unregister_scheduler(self, silent=False):
-        task_name = "MangaArchive_AutoTask"
-        cmd = f'schtasks /delete /tn "{task_name}" /f'
-        try:
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            if not silent:
-                if result.returncode == 0:
-                    messagebox.showinfo("해제 완료", "자동화 등록이 정상적으로 해제되었습니다.")
-                else:
-                    messagebox.showinfo("확인", "현재 등록된 스케줄러 일정이 없습니다.")
-        except Exception as e:
-            if not silent: messagebox.showerror("에러", f"해제 실패: {e}")
 
 # ==========================================
 # [ 프로그램 무인/유인 분기 구동 진입점 ]
 # ==========================================
 if __name__ == "__main__":
-    if CLI_MODE or (len(sys.argv) > 1 and sys.argv[1] == "--cron"):
-        start_p = START_PAGE
-        end_p = END_PAGE
-        max_p = MAX_POSTS_TO_ARCHIVE
-        force_nos_str = ",".join(FORCE_REARCHIVE_POST_NOS)
-        force_tmpl = FORCE_TEMPLATE_REBUILD
-        
-        if not CLI_MODE and os.path.exists(SETTINGS_FILE):
+    # 콘솔 테스트 구동 (유저 수동 테스트 전용)
+    start_p = START_PAGE
+    end_p = END_PAGE
+    max_p = MAX_POSTS_TO_ARCHIVE
+    force_nos_str = ",".join(FORCE_REARCHIVE_POST_NOS)
+    force_tmpl = FORCE_TEMPLATE_REBUILD
+    
+    # 만약 CLI_MODE가 아니고 스케줄러를 통해 강제 구동 시에만 파일 세팅 로드
+    if len(sys.argv) > 1 and sys.argv[1] == "--cron":
+        if os.path.exists(SETTINGS_FILE):
             try:
                 with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                     data = json.load(f)
@@ -645,15 +501,6 @@ if __name__ == "__main__":
                     force_tmpl = data.get("force_template", False)
             except Exception: pass
             
-        run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_tmpl)
-        sys.exit(0)
-    else:
-        root = tk.Tk()
-        app = AppGUI(root)
-        
-        def on_closing():
-            release_lock()
-            root.destroy()
-            
-        root.protocol("WM_DELETE_WINDOW", on_closing)
-        root.mainloop()
+    run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_tmpl)
+    release_lock()
+    sys.exit(0)
