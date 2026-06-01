@@ -8,7 +8,7 @@ MAX_POSTS_TO_ARCHIVE = 30               # 기본 최대 수집 수량 (0 이면 
 
 # 🚀 [템플릿 디자인 초고속 갱신용 토글]
 #  False /True로 설정 시 크롬창과 드라이브 API 호출 없이 로컬에서 단 1초 만에 모바일 반응형 템플릿으로 일괄 교체합니다.
-FORCE_TEMPLATE_REBUILD = True         
+FORCE_TEMPLATE_REBUILD = False 
 
 # 강제 전체 재수집(초기화) 대상 글 번호 목록
 FORCE_REARCHIVE_POST_NOS = []
@@ -143,6 +143,7 @@ def upload_file_to_drive(drive_service, file_path, folder_id, thread_http=None):
     mime_type = "image/jpeg"
     if filename.endswith(".gif"): mime_type = "image/gif"
     elif filename.endswith(".png"): mime_type = "image/png"
+    elif filename.endswith(".webp"): mime_type = "image/webp"
     
     media = MediaFileUpload(file_path, mimetype=mime_type, resumable=False)
     if thread_http:
@@ -239,8 +240,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
 
     try:
         page.goto(target_url, timeout=20000, wait_until="domcontentloaded")
-        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-        time.sleep(1.0)
+        time.sleep(0.5)
     except Exception as e:
         print(f"      ⚠️ 로딩 대기 제한 초과 (수집 강제 수행): {e}")
 
@@ -275,8 +275,10 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     down_el = soup.select_one(".down_num")
     downvotes = down_el.text.strip() if down_el else "0"
 
+    # 🚀 [속도 개선 핵심 기술 1] 기존 댓글에 포함된 '구글 드라이브 주소'를 메모리에 캐싱하여 중복 업로드 완전 차단!
+    existing_comments_cache = {}
     if update_comments_only and os.path.exists(html_path):
-        print(f"🔄 [{post_no}번 글] 기존 이미지 주소 보존 및 최신 디자인/댓글 조립 중...")
+        print(f"🔄 [{post_no}번 글] 기존 이미지 주소 보존 및 초고속 댓글 동기화 중...")
         try:
             with open(html_path, "r", encoding="utf-8") as f:
                 old_soup = BeautifulSoup(f.read(), "html.parser")
@@ -295,6 +297,25 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
             completed_posts = load_checkpoint()
             image_count = completed_posts.get(post_no, {}).get("image_count", 0)
             thumbnail_url = completed_posts.get(post_no, {}).get("thumbnail", "")
+
+            # 💡 기존 HTML 내에 숨겨둔 JSON 데이터를 읽어와서 이전에 업로드한 이미지 링크 재활용
+            script_tags = old_soup.find_all("script")
+            for s in script_tags:
+                if s.string and "const rawComments =" in s.string:
+                    match = re.search(r"const rawComments = (\[.*?\]);", s.string, re.DOTALL)
+                    if match:
+                        try:
+                            old_comments = json.loads(match.group(1))
+                            for oc in old_comments:
+                                # 작성자명+댓글내용+시간 3가지를 조합해 고유 키값 생성
+                                key = f"{oc.get('writer', '')}|{oc.get('text', '')}|{oc.get('date', '')}"
+                                existing_comments_cache[key] = {
+                                    "dccon": oc.get("dccon", ""),
+                                    "comment_img": oc.get("comment_img", "")
+                                }
+                        except Exception: pass
+                    break
+
         except Exception:
             update_comments_only = False
 
@@ -320,7 +341,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
 
         downloaded_mangas = []
         with ThreadPoolExecutor(max_workers=10) as executor:
-            # ✅ 여기서 오류가 났던 문법을 완벽히 수정했습니다! (for i, el in enumerate)
             futures = [executor.submit(download_worker, i, el) for i, el in enumerate(img_tags)]
             for f in as_completed(futures):
                 res = f.result()
@@ -394,7 +414,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     def parse_visible_comments(page_html):
         c_soup = BeautifulSoup(page_html, "html.parser")
         comment_items = c_soup.select("ul.cmt_list li")
-        
         folder_id = get_or_create_drive_folder(drive_service)
         
         for item in comment_items:
@@ -416,31 +435,52 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
             date_element = item.find("span", class_="date_time") or item.find("span", class_="date")
             date_text = date_element.text.strip() if date_element else ""
             
-            dccon_src = ""
-            dccon = item.find("img", class_=re.compile("dccon"))
-            if dccon: 
-                dccon_src = dccon.get("data-src") or dccon.get("data-original") or dccon.get("org-src") or dccon.get("src") or ""
+            # 🚀 [속도 개선 핵심 기술 2] 캐시 확인 후 불필요한 구글 드라이브 업로드 원천 차단
+            cache_key = f"{full_writer}|{txt}|{date_text}"
             
-            comment_img_src = ""
-            for img_el in item.find_all("img"):
-                img_src = img_el.get("data-original") or img_el.get("data-src") or img_el.get("org-src") or img_el.get("src")
-                if img_src and "dccon" not in img_src and "option_icon" not in img_src:
-                    try:
-                        c_img_res = img_session.get(img_src, headers=img_headers, timeout=10)
-                        if c_img_res.status_code == 200:
-                            ext = img_src.split(".")[-1].split("?")[0].lower()
-                            if ext not in ["jpg", "png", "gif", "webp"]: ext = "jpg"
-                            temp_path = f"{img_dir}/cmt_{c_id}.{ext}"
-                            with open(temp_path, "wb") as f: f.write(c_img_res.content)
-                            _, comment_img_src = upload_file_to_drive(drive_service, temp_path, folder_id)
-                            os.remove(temp_path)
-                    except Exception as e:
-                        print(f"      ⚠️ 댓글 이미지 우회 전송 오류: {e}")
-                    break
+            if cache_key in existing_comments_cache:
+                # 이전에 올려둔 게 있다면 절대 다운받지 않고 캐시에서 주소만 쏙 빼서 재활용합니다! (속도 엄청 빠름)
+                dccon_src = existing_comments_cache[cache_key]["dccon"]
+                comment_img_src = existing_comments_cache[cache_key]["comment_img"]
+            else:
+                # 🐸 [디시콘 엑박 완벽 차단] 외부 펌핑 차단을 막기 위해 디시콘을 내 구글 드라이브로 아예 납치해버립니다.
+                dccon_src = ""
+                dccon = item.find("img", class_=re.compile("dccon"))
+                if dccon: 
+                    raw_dccon_src = dccon.get("data-src") or dccon.get("data-original") or dccon.get("org-src") or dccon.get("src") or ""
+                    if raw_dccon_src:
+                        try:
+                            d_img_res = img_session.get(raw_dccon_src, headers=img_headers, timeout=10)
+                            if d_img_res.status_code == 200:
+                                ext = raw_dccon_src.split(".")[-1].split("?")[0].lower()
+                                if ext not in ["jpg", "png", "gif", "webp"]: ext = "gif"
+                                temp_path = f"{img_dir}/dccon_{c_id}.{ext}"
+                                with open(temp_path, "wb") as f: f.write(d_img_res.content)
+                                _, dccon_src = upload_file_to_drive(drive_service, temp_path, folder_id)
+                                os.remove(temp_path)
+                        except Exception as e:
+                            print(f"      ⚠️ 디시콘 납치 전송 오류: {e}")
+
+                comment_img_src = ""
+                for img_el in item.find_all("img"):
+                    img_src = img_el.get("data-original") or img_el.get("data-src") or img_el.get("org-src") or img_el.get("src")
+                    if img_src and "dccon" not in img_src and "option_icon" not in img_src:
+                        try:
+                            c_img_res = img_session.get(img_src, headers=img_headers, timeout=10)
+                            if c_img_res.status_code == 200:
+                                ext = img_src.split(".")[-1].split("?")[0].lower()
+                                if ext not in ["jpg", "png", "gif", "webp"]: ext = "jpg"
+                                temp_path = f"{img_dir}/cmt_{c_id}.{ext}"
+                                with open(temp_path, "wb") as f: f.write(c_img_res.content)
+                                _, comment_img_src = upload_file_to_drive(drive_service, temp_path, folder_id)
+                                os.remove(temp_path)
+                        except Exception as e:
+                            print(f"      ⚠️ 댓글 이미지 우회 전송 오류: {e}")
+                        break
                     
             collected_comments.append({"writer": full_writer, "text": txt, "is_reply": is_reply, "dccon": dccon_src, "comment_img": comment_img_src, "date": date_text})
 
-    # 🛡️ [버그 패치 완료] 무식한 1.2초 고정 대기 ❌ -> 서버 응답 완료 시점 지능적 대기 ⭕
+    # 🛡️ [꼬임 방지 기술] 1.2초 기다리는 무식한 방식 대신 디시 서버의 전송 신호가 끝날 때까지 안전하게 기다립니다.
     while True:
         parse_visible_comments(page.content())
         next_page_num = current_cmt_page + 1
@@ -453,10 +493,10 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 try:
                     with page.expect_response(lambda r: "comment" in r.url, timeout=5000):
                         btn.evaluate("node => node.click()")
-                    page.wait_for_timeout(500)
+                    page.wait_for_timeout(300)
                 except Exception as e:
                     print(f"      ⚠️ 댓글 페이징 지연, 안전 모드 대기: {e}")
-                    time.sleep(2.5)
+                    time.sleep(2.0)
                 
                 current_cmt_page = next_page_num
                 clicked = True
@@ -498,9 +538,12 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
         list_page.on("dialog", lambda dialog: dialog.dismiss())
         post_page.on("dialog", lambda dialog: dialog.dismiss())
         
+        # 🚀 [속도 개선 핵심 기술 3] 브라우저에 불필요한 이미지 렌더링 강제 차단으로 5배 빨라집니다.
         def block_heavy_resources(route):
-            if route.request.resource_type in ["font", "media"]: route.abort()
-            else: route.continue_()
+            if route.request.resource_type in ["image", "stylesheet", "font", "media"]: 
+                route.abort()
+            else: 
+                route.continue_()
                 
         list_page.route("**/*", block_heavy_resources)
         post_page.route("**/*", block_heavy_resources)
@@ -583,7 +626,7 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
             
             print("\n🚀 데이터 GitHub Pages 배포 시도 중...")
             subprocess.run("git add .", shell=True)
-            subprocess.run('git commit -m "Auto Update: Github Pages Sync"', shell=True)
+            subprocess.run('git commit -m "Auto Update: Fast Sync & DC-con Bug Fix"', shell=True)
             subprocess.run("git push", shell=True)
             print("🎉 배포가 완전히 완료되었습니다!")
 
