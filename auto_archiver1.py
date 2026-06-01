@@ -4,14 +4,14 @@
 GALLERY_ID = "comic_new6"               # 디시인사이드 갤러리 ID
 START_PAGE = 1                          # 기본 시작 페이지
 END_PAGE = 2                            # 기본 종료 페이지
-MAX_POSTS_TO_ARCHIVE = 10                # 기본 최대 수집 수량 (0 이면 제한 없음)
+MAX_POSTS_TO_ARCHIVE = 8                # 기본 최대 수집 수량 (0 이면 제한 없음)
 
 # 🚀 [템플릿 초고속 갱신용 토글]
 # True로 설정 시 이미지 업로드를 생략하고 기존 드라이브 주소로 HTML 디자인만 즉시 교체합니다.
 FORCE_TEMPLATE_REBUILD = False          
 
-# 강제 전체 재수집(초기화) 대상 글 번호 목록 (이미지 다시 다운로드/업로드 진행)
-FORCE_REARCHIVE_POST_NOS = ["4605771"]
+# 강제 전체 재수집(초기화) 대상 글 번호 목록 (몇 페이지에 있든 무조건 최우선 수집!)
+FORCE_REARCHIVE_POST_NOS = []
 
 # 구글 드라이브 및 로컬 백업 경로 설정
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
@@ -47,14 +47,14 @@ socket.setdefaulttimeout(15)
 
 os.makedirs(BASE_DIR, exist_ok=True)
 
-# 깃허브 Pages 차단 우회를 위한 .nojekyll 자동 생성
+# 깃허브 Pages Jekyll 우회 파일 자동 생성
 if not os.path.exists(".nojekyll"):
     try:
         with open(".nojekyll", "w") as f: pass
         print("ℹ️ 깃허브 Pages 차단 방지용 .nojekyll 파일을 생성했습니다.")
     except Exception: pass
 
-# 중복 실행 방지 락 시스템
+# 중복 가동 방지용 자가치유 락 시스템
 if os.path.exists(LOCK_FILE):
     try:
         with open(LOCK_FILE, "r") as f:
@@ -162,7 +162,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     thumbnail_url = ""
     poll_drive_url = ""
 
-    # 실시간 최신 통계 데이터 크롤링
+    # 실시간 통계 수집
     try:
         page.goto(target_url, timeout=20000, wait_until="domcontentloaded")
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
@@ -173,7 +173,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     full_html = page.content()
     soup = BeautifulSoup(full_html, "html.parser")
     if not soup.find("div", class_="write_div"):
-        print(f" ❌ [{post_no}번 글] 원본 글을 찾을 수 없습니다.")
+        print(f" ❌ [{post_no}번 글] 원본 글을 찾을 수 없거나 접근이 불가능합니다.")
         return False, None
 
     title_el = soup.find("span", class_="title_subject")
@@ -201,7 +201,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     down_el = soup.select_one(".down_num")
     downvotes = down_el.text.strip() if down_el else "0"
 
-    # 🔄 [댓글 동기화 / 템플릿만 갱신 모드] 이미지 다운로드/업로드 단계를 생략하고 HTML만 재생성
+    # 🔄 [댓글 동기화 / 템플릿만 갱신 모드] 이미지 전송 생략하고 HTML만 조립
     if update_comments_only and os.path.exists(html_path):
         print(f"🔄 [{post_no}번 글] 이미지 전송 생략 및 디자인/댓글 초고속 갱신 중...")
         try:
@@ -277,7 +277,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 res = f.result()
                 if res: uploaded_results.append(res)
 
-        # 🛡️ [자가 치유 안전 장치] 업로드에 결함 발생 시 완료 대조군 등록을 차단
+        # 🛡️ [자가 치유 안전 장치] 업로드 결함 발생 시 완료 대조군 등록을 차단
         if len(uploaded_results) < len(downloaded_mangas) or len(downloaded_mangas) == 0:
             print(f" ⚠️ [{post_no}번 글] 일부 이미지 전송 실패 ({len(uploaded_results)}/{len(downloaded_mangas)} 성공)")
             print("   안전을 위해 본 게시글을 미완료 상태로 두고 다음 실행 시 다시 수집하도록 제외합니다.")
@@ -413,6 +413,30 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
         creds = get_gcp_credentials()
         drive_service = build('drive', 'v3', credentials=creds)
         
+        # 🛡️ [자가 치유 핵심 로직 추가] 
+        # 목록 탐색( lists/ )을 하기도 전에, FORCE_REARCHIVE_POST_NOS에 있는 글들을 최우선적으로 다이렉트 강제 수집!
+        # 이로써 수집하고자 하는 타겟 글이 몇 페이지에 있든, 목록에서 밀려났든 상관없이 무조건 100% 정상 수집됩니다.
+        if force_nos:
+            print("\n==========================================")
+            print(" 🚀 [최우선 타겟 수집] 강제 재수집 대기열 가동 중...")
+            print("==========================================")
+            for f_no in force_nos:
+                # 대조군 DB에서 강제 제거
+                if f_no in completed_posts:
+                    del completed_posts[f_no]
+                
+                print(f"\n▶ [{f_no}번 글] 원문 강제 다이렉트 수집 개시...")
+                success, post_meta = archive_single_post(f_no, post_page, drive_service, creds, update_comments_only=False)
+                if success:
+                    # 실제 목록 페이지의 댓글 개수를 가져오기 위해 디시 본문 파싱 값 적용
+                    completed_posts[f_no] = {
+                        "comment_count": post_meta["comment_count"],
+                        **post_meta
+                    }
+                    save_checkpoint(completed_posts)
+                    archive_count += 1
+                    time.sleep(3.0)
+
         try:
             for page_num in range(start_p, end_p + 1):
                 print(f"\n==========================================")
@@ -428,26 +452,23 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                     if not no_el or not no_el.text.strip().isdigit(): continue
                     post_no = no_el.text.strip()
                     
+                    # 이미 위에서 다이렉트 강제 수집을 끝낸 타겟 번호는 목록 순회에서 안전하게 패스!
+                    if post_no in force_nos:
+                        continue
+                    
                     reply_el = row.select_one(".reply_num")
                     current_cmt_count = int(re.search(r"\d+", reply_el.text).group()) if reply_el and re.search(r"\d+", reply_el.text) else 0
                     
-                    if post_no in force_nos:
-                        if post_no in completed_posts: del completed_posts[post_no]
-                        is_completed = False
-                    else:
-                        is_completed = post_no in completed_posts
+                    is_completed = post_no in completed_posts
                     
-                    # 🛡️ [수정 적용] 템플릿 재생성 모드일 때, 강제 재수집 대상 글(is_completed=False)은 이 조건문을 우회하여 '정상 다운로드'로 진입하게 설계
                     if force_template_rebuild:
                         if is_completed:
                             success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, update_comments_only=True)
                             if success:
                                 completed_posts[post_no]["comment_count"] = current_cmt_count
                                 archive_count += 1
-                            continue # 템플릿만 갱신 후 루프 재개
-                        # is_completed가 False(즉 강제 재수집 대상)인 경우에는 아래의 일반 가동 로직(전체 다운로드)으로 진입!
+                        continue
 
-                    # 일반 가동 로직
                     if is_completed:
                         saved_cmt_count = completed_posts[post_no].get("comment_count", 0)
                         if current_cmt_count <= saved_cmt_count: continue
@@ -478,29 +499,15 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
             print("🎉 배포가 완전히 완료되었습니다!")
 
 # ==========================================
-# [ 프로그램 무인/유인 분기 구동 진입점 ]
+# [ 프로그램 구동 진입점 ]
 # ==========================================
 if __name__ == "__main__":
-    # 콘솔 테스트 구동 (유저 수동 테스트 전용)
     start_p = START_PAGE
     end_p = END_PAGE
     max_p = MAX_POSTS_TO_ARCHIVE
     force_nos_str = ",".join(FORCE_REARCHIVE_POST_NOS)
     force_tmpl = FORCE_TEMPLATE_REBUILD
     
-    # 만약 CLI_MODE가 아니고 스케줄러를 통해 강제 구동 시에만 파일 세팅 로드
-    if len(sys.argv) > 1 and sys.argv[1] == "--cron":
-        if os.path.exists(SETTINGS_FILE):
-            try:
-                with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    start_p = int(data.get("start_page", str(START_PAGE)))
-                    end_p = int(data.get("end_page", str(END_PAGE)))
-                    max_p = int(data.get("max_posts", str(MAX_POSTS_TO_ARCHIVE)))
-                    force_nos_str = data.get("force_nos", ",".join(FORCE_REARCHIVE_POST_NOS))
-                    force_tmpl = data.get("force_template", False)
-            except Exception: pass
-            
     run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_tmpl)
     release_lock()
     sys.exit(0)
