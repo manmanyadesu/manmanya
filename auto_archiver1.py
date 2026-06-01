@@ -4,7 +4,7 @@
 GALLERY_ID = "comic_new6"               # 디시인사이드 갤러리 ID
 START_PAGE = 1                          # 기본 시작 페이지
 END_PAGE = 2                            # 기본 종료 페이지
-MAX_POSTS_TO_ARCHIVE = 8                # 기본 최대 수집 수량 (0 이면 제한 없음)
+MAX_POSTS_TO_ARCHIVE = 30                # 기본 최대 수집 수량 (0 이면 제한 없음)
 
 # 🚀 [템플릿 디자인 초고속 갱신용 토글]
 # False/True로 설정 시 이미지 업로드를 생략하고 기존 드라이브 주소로 모바일 반응형 템플릿만 일괄 교체합니다.
