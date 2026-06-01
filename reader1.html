@@ -5,25 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>만화 리더기</title>
     <style>
-        :root { --bg-color: #f8fafc; --card-bg: #ffffff; --border-color: #cbd5e1; --text-color: #0f172a; --text-sub: #475569; --primary-color: #1d4ed8; --accent-color: #dc2626; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif; overflow: hidden; }
-        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .lock-container { background-color: var(--card-bg); padding: 40px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
-        .lock-container h2 { margin-top: 0; color: var(--primary-color); font-size: 20px; font-weight: 800; }
-        .lock-input { width: 150px; padding: 12px; font-size: 18px; text-align: center; letter-spacing: 5px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); margin: 20px 0; font-weight: bold; }
-        .lock-input:focus { outline: none; border-color: var(--primary-color); }
-        .lock-btn { background-color: var(--primary-color); color: white; border: none; padding: 11px 24px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
-        .lock-btn:hover { background-color: #1e40af; }
-        #error-msg { color: var(--accent-color); font-weight: bold; font-size: 13px; margin-top: 12px; display: none; }
-        #viewer-frame { width: 100%; height: 100%; border: none; display: none; background: white;}
-        .back-to-shelf-btn { position: fixed; top: 15px; left: 15px; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(4px); color: var(--primary-color); border: 1px solid var(--border-color); padding: 8px 18px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 13px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: 0.2s; }
-        .back-to-shelf-btn:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); transform: scale(1.05); }
+        :root { 
+            --bg-color: #f8fafc; 
+            --card-bg: #ffffff; 
+            --border-color: #cbd5e1; 
+            --text-color: #0f172a; 
+            --text-sub: #475569; 
+            --primary-color: #1d4ed8; 
+            --accent-color: #dc2626; 
+        }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif; 
+            /* 🛡️ [모바일 뷰 스크롤 차단 버그 제거 완료] 
+               사파리/크롬 등 모바일 브라우저에서 아이프레임 스크롤이 차단되던 overflow: hidden; 속성을 전면 해제합니다. */
+        }
+        #lock-screen { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: var(--bg-color); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; 
+        }
+        .lock-container { 
+            background-color: var(--card-bg); 
+            padding: 40px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color); 
+            text-align: center; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); 
+        }
+        .lock-container h2 { 
+            margin-top: 0; 
+            color: var(--primary-color); 
+            font-size: 20px; 
+            font-weight: 800; 
+        }
+        .lock-input { 
+            width: 150px; 
+            padding: 12px; 
+            font-size: 18px; 
+            text-align: center; 
+            letter-spacing: 5px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 20px 0; 
+            font-weight: bold; 
+        }
+        .lock-input:focus { 
+            outline: none; 
+            border-color: var(--primary-color); 
+        }
+        .lock-btn { 
+            background-color: var(--primary-color); 
+            color: white; 
+            border: none; 
+            padding: 11px 24px; 
+            font-size: 14px; 
+            font-weight: bold; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); 
+        }
+        .lock-btn:hover { 
+            background-color: #1e40af; 
+        }
+        #error-msg { 
+            color: var(--accent-color); 
+            font-weight: bold; 
+            font-size: 13px; 
+            margin-top: 12px; 
+            display: none; 
+        }
+        #viewer-frame { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: none; 
+            background: white;
+        }
+        .back-to-shelf-btn { 
+            position: fixed; 
+            top: 15px; 
+            left: 15px; 
+            background-color: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(4px); 
+            color: var(--primary-color); 
+            border: 1px solid var(--border-color); 
+            padding: 8px 18px; 
+            border-radius: 30px; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-size: 13px; 
+            z-index: 10000; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            transition: 0.2s; 
+        }
+        .back-to-shelf-btn:hover { 
+            background-color: var(--primary-color); 
+            color: white; 
+            border-color: var(--primary-color); 
+            transform: scale(1.05); 
+        }
     </style>
 </head>
 <body>
-
 <a href="./index1.html" class="back-to-shelf-btn">◀ 책장으로</a>
-
 <div id="lock-screen">
     <div class="lock-container">
         <h2>🔒 비공개 아카이브 인증</h2>
@@ -34,40 +135,25 @@
         <div id="error-msg">비밀번호가 일치하지 않습니다.</div>
     </div>
 </div>
-
 <iframe id="viewer-frame"></iframe>
-
 <script>
     if (sessionStorage.getItem('archive_authenticated') === 'true') {
-        document.getElementById('lock-screen').style.display = 'none';
-        loadManga();
+        document.getElementById('lock-screen').style.display = 'none'; loadManga();
     }
-
     function verifyPassword() {
         const pw = document.getElementById('password').value;
         if (pw === '1111') {
             sessionStorage.setItem('archive_authenticated', 'true');
-            document.getElementById('lock-screen').style.display = 'none';
-            loadManga();
+            document.getElementById('lock-screen').style.display = 'none'; loadManga();
         } else {
             document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('password').value = '';
-            document.getElementById('password').focus();
+            document.getElementById('password').value = ''; document.getElementById('password').focus();
         }
     }
-
     function loadManga() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const postNo = urlParams.get('no');
-        
-        if (!postNo) {
-            alert("잘못된 접근입니다.");
-            window.location.href = './index1.html';
-            return;
-        }
-
-        const iframe = document.getElementById('viewer-frame');
-        iframe.style.display = 'block';
+        const urlParams = new URLSearchParams(window.location.search); const postNo = urlParams.get('no');
+        if (!postNo) { alert("잘못된 접근입니다."); window.location.href = './index1.html'; return; }
+        const iframe = document.getElementById('viewer-frame'); iframe.style.display = 'block';
         iframe.src = `./archive/${postNo}/saved_post.html`;
     }
 </script>
