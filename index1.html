@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>만화갤러리 개인 도서관</title>
+    <style>
+        :root { --bg-color: #f8fafc; --card-bg: #ffffff; --border-color: #cbd5e1; --text-color: #0f172a; --text-sub: #475569; --primary-color: #1d4ed8; --accent-color: #dc2626; }
+        body { font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 40px 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { text-align: center; padding-bottom: 25px; border-bottom: 2px solid var(--border-color); margin-bottom: 35px; }
+        header h1 { margin: 0; font-size: 28px; letter-spacing: -0.5px; color: var(--primary-color); font-weight: 800; }
+        .controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 35px; }
+        .search-bar { width: 100%; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-color); font-size: 15px; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
+        .search-bar:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25); }
+        .tabs-container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .tabs { display: flex; gap: 10px; }
+        .tab-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
+        .tab-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
+        .sub-tabs { display: none; gap: 6px; }
+        .sub-tabs.active { display: flex; }
+        .sub-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .sub-btn.active { border-color: var(--accent-color); color: var(--accent-color); background-color: rgba(220, 38, 38, 0.05); }
+        .bookshelf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 25px; }
+        .book-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; }
+        .book-card:hover { transform: translateY(-6px); box-shadow: 0 12px 20px rgba(0,0,0,0.15); }
+        .thumbnail-box { width: 100%; padding-top: 135%; position: relative; background-color: #f1f5f9; border-bottom: 1px solid var(--border-color); }
+        .thumbnail-box img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .book-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+        .book-title { font-size: 14px; font-weight: bold; line-height: 1.5; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 12px; word-break: break-all; color: var(--text-color); }
+        .book-meta { display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-top: auto; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px; }
+        .meta-recom { color: var(--accent-color); }
+        .meta-cmt { color: var(--primary-color); }
+        .book-date { font-size: 11px; color: var(--text-sub); margin-top: 8px; }
+        .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 50px; margin-bottom: 30px; }
+        .page-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
+        .page-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
+        @media (max-width: 480px) { .bookshelf-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>만화갤러리 비밀 아카이브 도서관 (총 <span id="total-count" style="color:var(--primary-color);">0</span>개)</h1>
+    </header>
+    <div class="controls">
+        <input type="text" id="search-input" class="search-bar" placeholder="만화 제목 또는 초성을 검색하세요...">
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-btn active" id="btn-latest" onclick="setSort('latest')">최신순</button>
+                <button class="tab-btn" id="btn-recom" onclick="setSort('recom')">추천순</button>
+            </div>
+            <div class="sub-tabs" id="sub-tabs-area">
+                <button class="sub-btn active" id="sub-all" onclick="setSubFilter('all')">역대</button>
+                <button class="sub-btn" id="sub-year" onclick="setSubFilter('year')">연간</button>
+                <button class="sub-btn" id="sub-month" onclick="setSubFilter('month')">월간</button>
+                <button class="sub-btn" id="sub-week" onclick="setSubFilter('week')">주간</button>
+            </div>
+        </div>
+    </div>
+    <div class="bookshelf-grid" id="bookshelf"></div>
+    <div class="pagination" id="shelf-pagination"></div>
+</div>
+<script>
+    let archiveData = {}; let currentSort = 'latest'; let currentSubFilter = 'all'; let currentShelfPage = 1; const itemsPerPage = 24; 
+    const CHOSUNG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    function getChosung(str) {
+        let result = "";
+        for (let i = 0; i < str.length; i++) {
+            const code = str.charCodeAt(i) - 44032;
+            if (code > -1 && code < 11172) { result += CHOSUNG[Math.floor(code / 588)]; } else { result += str.charAt(i); }
+        }
+        return result.toLowerCase();
+    }
+    async function loadArchive() {
+        const bookshelf = document.getElementById('bookshelf');
+        try {
+            const response = await fetch('./archive/completed_posts.json');
+            if (!response.ok) throw new Error("데이터 로딩 실패");
+            archiveData = await response.json();
+            renderBookshelf();
+        } catch (error) {
+            bookshelf.innerHTML = `<div style="color:#dc2626; padding: 25px;">❌ 데이터를 불러오지 못했습니다. 파이썬을 한 번 실행해 데이터(completed_posts.json)를 만들어 주세요.</div>`;
+        }
+    }
+    function renderBookshelf() {
+        const bookshelf = document.getElementById('bookshelf'); const paginationArea = document.getElementById('shelf-pagination');
+        bookshelf.innerHTML = ''; paginationArea.innerHTML = '';
+        const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+        const searchChosung = getChosung(searchQuery);
+        let items = Object.keys(archiveData).map(key => ({ post_no: key, ...archiveData[key] }));
+        if (searchQuery) {
+            items = items.filter(item => {
+                const titleLower = item.title.toLowerCase(); const titleChosung = getChosung(titleLower);
+                return titleLower.includes(searchQuery) || titleChosung.includes(searchChosung);
+            });
+        }
+        const now = new Date();
+        if (currentSort === 'recom' && currentSubFilter !== 'all') {
+            items = items.filter(item => {
+                if (!item.date) return false;
+                const postDate = new Date(item.date.replace(/\./g, '/'));
+                const diffTime = Math.abs(now - postDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (currentSubFilter === 'week') return diffDays <= 7;
+                if (currentSubFilter === 'month') return diffDays <= 30;
+                if (currentSubFilter === 'year') return diffDays <= 365;
+                return true;
+            });
+        }
+        if (currentSort === 'latest') {
+            items.sort((a, b) => {
+                const dateA = a.date ? new Date(a.date.replace(/\./g, '/')) : new Date(0);
+                const dateB = b.date ? new Date(b.date.replace(/\./g, '/')) : new Date(0);
+                return dateB - dateA;
+            });
+        } else if (currentSort === 'recom') { items.sort((a, b) => (b.recommend || 0) - (a.recommend || 0)); }
+        const totalItems = items.length; const totalPages = Math.ceil(totalItems / itemsPerPage);
+        if (currentShelfPage > totalPages) currentShelfPage = totalPages;
+        if (currentShelfPage < 1) currentShelfPage = 1;
+        const startIndex = (currentShelfPage - 1) * itemsPerPage; const pageItems = items.slice(startIndex, startIndex + itemsPerPage);
+        document.getElementById('total-count').innerText = totalItems;
+        pageItems.forEach(item => {
+            const card = document.createElement('a'); card.className = 'book-card';
+            card.href = `./reader1.html?no=${item.post_no}`;
+            const thumbUrl = item.thumbnail || 'https://via.placeholder.com/180x240/f1f5f9/94a3b8?text=NO+THUMB';
+            card.innerHTML = `
+                <div class="thumbnail-box"><img src="${thumbUrl}" alt="썸네일" loading="lazy"></div>
+                <div class="book-info">
+                    <div class="book-title">${item.title}</div>
+                    <div class="book-meta">
+                        <span class="meta-recom">★ 추천 ${item.recommend || 0}</span>
+                        <span class="meta-cmt">💬 댓글 ${item.comment_count || 0}</span>
+                    </div>
+                    <div class="book-date">${item.date ? item.date.split(' ')[0] : '날짜 없음'}</div>
+                </div>
+            `;
+            bookshelf.appendChild(card);
+        });
+        if (totalPages > 1) {
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button'); btn.className = 'page-btn';
+                if (i === currentShelfPage) btn.classList.add('active');
+                btn.innerText = i;
+                btn.onclick = () => { currentShelfPage = i; renderBookshelf(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                paginationArea.appendChild(btn);
+            }
+        }
+    }
+    function setSort(type) {
+        currentSort = type; currentShelfPage = 1; 
+        document.getElementById('btn-latest').classList.toggle('active', type === 'latest');
+        document.getElementById('btn-recom').classList.toggle('active', type === 'recom');
+        document.getElementById('sub-tabs-area').classList.toggle('active', type === 'recom');
+        renderBookshelf();
+    }
+    function setSubFilter(filter) {
+        currentSubFilter = filter; currentShelfPage = 1; 
+        document.querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('sub-' + filter).classList.add('active');
+        renderBookshelf();
+    }
+    document.getElementById('search-input').addEventListener('input', () => { currentShelfPage = 1; renderBookshelf(); });
+    loadArchive();
+</script>
+</body>
+</html>

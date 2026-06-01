@@ -1,0 +1,12 @@
+# 1. 모든 파일을 기본적으로 무시 (전부 차단)
+*
+
+# 2. 단, 아래의 핵심 파일들은 무시하지 않고 예외 처리함
+!/.gitignore
+!/auto_archiver1.py
+!/index1.html
+!/reader1.html
+
+# 3. 아카이브 폴더 및 하위 파일들도 무시하지 않고 예외 처리함
+!/archive/
+!/archive/**
