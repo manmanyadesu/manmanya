@@ -8,9 +8,9 @@ MAX_POSTS_TO_ARCHIVE = 30               # 기본 최대 수집 수량 (0 이면 
 
 # 🚀 [템플릿 디자인 초고속 갱신용 토글]
 #  False /True로 설정 시 크롬창과 드라이브 API 호출 없이 로컬에서 단 1초 만에 모바일 반응형 템플릿으로 일괄 교체합니다.
-FORCE_TEMPLATE_REBUILD = True          
+FORCE_TEMPLATE_REBUILD = True         
 
-# 강제 전체 재수집(초기화) 대상 글 번호 목록 (몇 페이지에 있든 무조건 최우선 수집!)
+# 강제 전체 재수집(초기화) 대상 글 번호 목록
 FORCE_REARCHIVE_POST_NOS = []
 
 # 구글 드라이브 및 로컬 백업 경로 설정
@@ -21,8 +21,13 @@ LOCK_FILE = f"{BASE_DIR}/crawler.lock"
 # ==============================================================================
 
 import os
-import re
 import sys
+
+# 🛡️ [스케줄러 백그라운드 가동 대비] 작업 폴더가 System32로 잡히는 것을 원천 차단
+current_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_dir)
+
+import re
 import time
 import json
 import random
@@ -44,17 +49,14 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 socket.setdefaulttimeout(15)
-
 os.makedirs(BASE_DIR, exist_ok=True)
 
-# 깃허브 Pages Jekyll 우회 파일 자동 생성
 if not os.path.exists(".nojekyll"):
     try:
         with open(".nojekyll", "w") as f: pass
         print("ℹ️ 깃허브 Pages 차단 방지용 .nojekyll 파일을 생성했습니다.")
     except Exception: pass
 
-# 중복 실행 방지용 락 시스템
 if os.path.exists(LOCK_FILE):
     try:
         with open(LOCK_FILE, "r") as f:
@@ -149,8 +151,6 @@ def upload_file_to_drive(drive_service, file_path, folder_id, thread_http=None):
         file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
     return file.get('id'), f"https://lh3.googleusercontent.com/d/{file.get('id')}"
 
-# ⚡ [초고속 오프라인 로컬 재조립 엔진] 
-# 크롬창 로딩 및 구글 드라이브 API 통신 0회! 이미 다운로드된 이미지 주소와 댓글 데이터를 바탕으로 0.01초 만에 템플릿만 복구
 def rebuild_html_locally(post_no):
     save_dir = f"{BASE_DIR}/{post_no}"
     html_path = f"{save_dir}/saved_post.html"
@@ -176,7 +176,6 @@ def rebuild_html_locally(post_no):
         date_el = soup.select_one(".post-meta-wrap .date")
         date_top = date_el.text.strip() if date_el else ""
         
-        # 이전 HTML 스크립트 태그 내에 백업된 rawComments JSON 데이터를 정규식으로 직접 추출
         script_tags = soup.find_all("script")
         comments_json_str = "[]"
         for s in script_tags:
@@ -238,7 +237,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     thumbnail_url = ""
     poll_drive_url = ""
 
-    # 실시간 통계 수집
     try:
         page.goto(target_url, timeout=20000, wait_until="domcontentloaded")
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
@@ -277,7 +275,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     down_el = soup.select_one(".down_num")
     downvotes = down_el.text.strip() if down_el else "0"
 
-    # 🔄 [댓글 동기화 / 템플릿만 갱신 모드] 이미지 전송 생략하고 HTML만 조립
     if update_comments_only and os.path.exists(html_path):
         print(f"🔄 [{post_no}번 글] 기존 이미지 주소 보존 및 최신 디자인/댓글 조립 중...")
         try:
@@ -301,7 +298,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
         except Exception:
             update_comments_only = False
 
-    # 📸 [최초 전체 수집 모드] 이미지 전송 정상 가동
     if not update_comments_only:
         content_area = soup.find("div", class_="write_div")
         img_tags = content_area.find_all("img") if content_area else []
@@ -324,6 +320,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
 
         downloaded_mangas = []
         with ThreadPoolExecutor(max_workers=10) as executor:
+            # ✅ 여기서 오류가 났던 문법을 완벽히 수정했습니다! (for i, el in enumerate)
             futures = [executor.submit(download_worker, i, el) for i, el in enumerate(img_tags)]
             for f in as_completed(futures):
                 res = f.result()
@@ -353,12 +350,12 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 res = f.result()
                 if res: uploaded_results.append(res)
 
-        # 🛡️ [자가 치유 안전 장치] 업로드 결함 발생 시 완료 대조군 등록을 차단
         if len(uploaded_results) < len(downloaded_mangas) or len(downloaded_mangas) == 0:
-            print(f" ⚠️ [{post_no}번 글] 일부 이미지 전송 실패 ({len(uploaded_results)}/{len(downloaded_mangas)} 성공)")
-            print("   안전을 위해 본 게시글을 미완료 상태로 두고 다음 실행 시 다시 수집하도록 제외합니다.")
-            shutil.rmtree(img_dir, ignore_errors=True)
-            return False, None
+            if img_tags:
+                print(f" ⚠️ [{post_no}번 글] 일부 이미지 전송 실패 ({len(uploaded_results)}/{len(downloaded_mangas)} 성공)")
+                print("   안전을 위해 본 게시글을 미완료 상태로 두고 다음 실행 시 다시 수집하도록 제외합니다.")
+                shutil.rmtree(img_dir, ignore_errors=True)
+                return False, None
 
         for idx, file_id, direct_link, img_el in uploaded_results:
             img_el["src"] = direct_link
@@ -388,7 +385,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 has_poll = True
             except Exception: pass
 
-    # 댓글 수집 및 디시 외부 전송 방지용 이미지 클라우드 업로드
     collected_comments = []
     seen_comment_ids = set()
     current_cmt_page = 1
@@ -420,13 +416,11 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
             date_element = item.find("span", class_="date_time") or item.find("span", class_="date")
             date_text = date_element.text.strip() if date_element else ""
             
-            # 🛡️ [복구 완료] 디시콘 지연 로딩 data-src/data-original 파싱 추가로 엑박 완전 해결
             dccon_src = ""
             dccon = item.find("img", class_=re.compile("dccon"))
             if dccon: 
                 dccon_src = dccon.get("data-src") or dccon.get("data-original") or dccon.get("org-src") or dccon.get("src") or ""
             
-            # 🛡️ [복구 완료] 유저 업로드 댓글 짤방 지연 로딩 data-src 파싱 추가 및 구글 드라이브 업로드로 이미지 깨짐 완치
             comment_img_src = ""
             for img_el in item.find_all("img"):
                 img_src = img_el.get("data-original") or img_el.get("data-src") or img_el.get("org-src") or img_el.get("src")
@@ -446,16 +440,24 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                     
             collected_comments.append({"writer": full_writer, "text": txt, "is_reply": is_reply, "dccon": dccon_src, "comment_img": comment_img_src, "date": date_text})
 
+    # 🛡️ [버그 패치 완료] 무식한 1.2초 고정 대기 ❌ -> 서버 응답 완료 시점 지능적 대기 ⭕
     while True:
         parse_visible_comments(page.content())
         next_page_num = current_cmt_page + 1
         page_buttons = page.locator(".cmt_paging a, .comment_numbox a")
         clicked = False
+        
         for i in range(page_buttons.count()):
             btn = page_buttons.nth(i)
             if btn.inner_text().strip() == str(next_page_num):
-                btn.evaluate("node => node.click()")
-                time.sleep(1.2)
+                try:
+                    with page.expect_response(lambda r: "comment" in r.url, timeout=5000):
+                        btn.evaluate("node => node.click()")
+                    page.wait_for_timeout(500)
+                except Exception as e:
+                    print(f"      ⚠️ 댓글 페이징 지연, 안전 모드 대기: {e}")
+                    time.sleep(2.5)
+                
                 current_cmt_page = next_page_num
                 clicked = True
                 break
@@ -463,7 +465,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
 
     poll_section_html = f"""<div class="poll-container"><h3>🗳️ 본문 투표 백업</h3><img src="{poll_drive_url}" style="max-width:100%; display:block; margin:0 auto;"></div>""" if (poll_drive_url or (not update_comments_only and has_poll)) else ""
 
-    # 🔗 [모바일 꽉 찬 화면 반응형 뷰포트 및 반응형 CSS 적용 완료]
     html_template = f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{title} - 아카이브</title><style>body {{ font-family: 'Malgun Gothic', sans-serif; margin: 40px; background-color: #f5f6f7; color: #333; }}.container {{ max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}.post-header {{ border-bottom: 1px solid #ccc; padding-bottom: 15px; margin-bottom: 20px; }}.post-title {{ font-size: 22px; font-weight: bold; color: #222; margin-bottom: 12px; }}.post-title a {{ text-decoration: none; color: inherit; }}.post-title a:hover {{ color: #1d4ed8; }}.post-meta-wrap {{ display: flex; justify-content: space-between; font-size: 13px; color: #666; }}.meta-left .writer {{ font-weight: bold; color: #333; margin-right: 10px; }}.comment-jump-btn {{ background: #f3f3f3; border: 1px solid #e1e1e1; border-radius: 15px; padding: 3px 12px; color: #333; text-decoration: none; font-weight: bold; font-size: 12px; }}.content {{ line-height: 1.8; font-size: 16px; margin-top: 30px; padding-bottom: 40px; }}.content img {{ max-width: 100%; height: auto; display: block; margin: 15px auto; }}.vote-box-container {{ border: 1px solid #ddd; padding: 30px; border-radius: 8px; margin: 40px auto; max-width: 400px; display: flex; justify-content: center; align-items: center; gap: 30px; background: #fff; }}.vote-number {{ font-size: 22px; font-weight: bold; width: 40px; text-align: center; }}.vote-circles {{ display: flex; gap: 15px; }}.circle-btn {{ width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; color: white; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }}.circle-up {{ background: #3b5998; }} .circle-down {{ background: #a5a5a5; }}.comments-header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b5998; padding-bottom: 10px; margin-top: 40px; }}.comments-title {{ font-size: 16px; font-weight: bold; color: #3b5998; }}.control-btn {{ background: none; border: none; font-size: 13px; cursor: pointer; font-weight: bold; color: #999; margin-right: 5px; }}.control-btn.active {{ color: #3b5998; }}.comment-list-area {{ border-top: 1px solid #3b5998; }}.comment-row {{ display: flex; border-bottom: 1px solid #e2e2e2; padding: 12px 0; align-items: flex-start; }}.comment-writer-box {{ width: 160px; flex-shrink: 0; padding: 0 10px; color: #333; font-weight: bold; font-size: 13px; word-break: break-all; }}.comment-writer-box span.ip {{ color: #999; font-weight: normal; font-size: 11px; }}.comment-content-box {{ flex-grow: 1; padding: 0 10px; font-size: 13px; color: #333; word-break: break-all; }}.comment-content-box img {{ max-width: 200px; border-radius: 4px; display: block; margin-top: 5px; }}.comment-date-box {{ width: 100px; flex-shrink: 0; text-align: right; color: #999; font-size: 12px; padding-right: 10px; }}.reply-row {{ background-color: #f9f9f9; padding-left: 0; border-left: 3px solid #ddd; }}.reply-row .comment-writer-box {{ width: 180px; padding-left: 35px; position: relative; }}.reply-icon {{ position: absolute; left: 12px; top: 0; color: #3b5998; font-weight: 900; }}.deleted-text {{ color: #aaa; font-style: normal; }}.pagination {{ display: flex; justify-content: center; gap: 5px; margin-top: 20px; }}.page-btn {{ border: 1px solid #ddd; background: white; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 13px; }}.page-btn.active {{ background: #3b5998; color: white; font-weight: bold; }}@media (max-width: 768px) {{ body {{ margin: 8px; padding: 0; background-color: #fff; }} .container {{ padding: 10px; border-radius: 0; box-shadow: none; }} .post-title {{ font-size: 18px; line-height: 1.4; }} .post-meta-wrap {{ flex-direction: column; gap: 5px; font-size: 11px; }} .comment-row {{ flex-direction: column; padding: 8px 0; }} .comment-writer-box {{ width: 100%; font-size: 12px; margin-bottom: 4px; }} .comment-content-box {{ width: 100%; font-size: 12px; padding: 0; }} .comment-content-box img {{ max-width: 150px; }} .comment-date-box {{ width: 100%; text-align: left; font-size: 10px; margin-top: 4px; }} .reply-row {{ padding-left: 10px; }} .reply-row .comment-writer-box {{ padding-left: 20px; }} .vote-box-container {{ padding: 15px; margin: 20px auto; gap: 15px; max-width: 100%; }} .content div, .content p, .content table, .content tr, .content td, .content span {{ max-width: 100% !important; width: auto !important; height: auto !important; }} }}</style></head><body><div class="container"><div class="post-header"><div class="post-title"><a href="{target_url}" target="_blank" title="디시인사이드 원문 글로 가기">{title} <span style="font-size:14px; color:#1d4ed8; font-weight:normal; margin-left:6px; vertical-align:middle;">🔗 원문 보기</span></a></div><div class="post-meta-wrap"><div class="meta-left"><span class="writer">{writer_top} {ip_top}</span><span class="date">{date_top}</span></div><div class="meta-right"><span>{views_top}</span> | <span>{recommend_top}</span> | <a href="#comment-section" class="comment-jump-btn">{comment_count_top}</a></div></div></div><div class="content">{content_area_html}</div>{poll_section_html}<div class="vote-box-container"><div class="vote-number" style="color:#d31900;">{upvotes}</div><div class="vote-circles"><div class="circle-btn circle-up"><span style="font-size:22px; color:#ffeb3b;">★</span><span>개념</span></div><div class="circle-btn circle-down"><span style="font-size:22px; color:white;">⬇</span><span>비추</span></div></div><div class="vote-number" style="color:#444;">{downvotes}</div></div><div id="comment-section"><div class="comments-header"><div class="comments-title">댓글 <span id="total-count" style="color:#d31900;">0</span>개</div><div class="comment-controls"><button class="control-btn active" id="sort-old" onclick="changeSort('old')">등록순</button><button class="control-btn" id="sort-new" onclick="changeSort('new')">최신순</button><button class="control-btn" id="sort-reply" onclick="changeSort('reply')">답글순</button><select id="limit-select" onchange="changeLimit(this.value)" style="padding: 2px; font-size: 12px; margin-left: 10px;"><option value="30">30개</option><option value="50" selected>50개</option><option value="100">100개</option><option value="9999">전체 보기</option></select></div></div><div class="comment-list-area" id="comment-list"></div><div class="pagination" id="pagination-buttons"></div></div></div><script>const rawComments = {json.dumps(collected_comments, ensure_ascii=False)}; let currentSort = 'old', commentsPerPage = 50, currentPage = 1, commentGroups = [], currentGroup = null; rawComments.forEach(c => {{ if (!c.is_reply) {{ currentGroup = {{ parent: c, replies: [] }}; commentGroups.push(currentGroup); }} else {{ if (currentGroup) currentGroup.replies.push(c); else {{ currentGroup = {{ parent: null, replies: [c] }}; commentGroups.push(currentGroup); }} }} }}); function buildWriterHTML(writerStr) {{ let match = writerStr.match(/(.+)\\s(\\([0-9.]+\\))$/); return match ? `${{match[1]}} <span class="ip">${{match[2]}}</span>` : writerStr; }} function buildContentHTML(c) {{ if (c.text.includes("삭제된 댓글")) return `<span class="deleted-text">${{c.text}}</span>`; let html = c.text.replace(/\\n/g, "<br>"); if (c.dccon) html += `<br><img src="${{c.dccon}}" style="width:85px; height:85px; margin-top:5px;">`; if (c.comment_img) html += `<br><img src="${{c.comment_img}}" style="margin-top:5px; max-width:200px; border-radius:4px;">`; return html; }} function renderComments() {{ const listArea = document.getElementById('comment-list'); const pageArea = document.getElementById('pagination-buttons'); listArea.innerHTML = ''; pageArea.innerHTML = ''; document.getElementById('total-count').innerText = rawComments.filter(c => !c.text.includes("삭제된 댓글")).length; if (rawComments.length === 0) return; let sortedGroups = [...commentGroups]; if (currentSort === 'new') sortedGroups.reverse(); else if (currentSort === 'reply') sortedGroups.sort((a, b) => b.replies.length - a.replies.length); const totalPages = Math.ceil(sortedGroups.length / commentsPerPage); if (currentPage > totalPages) currentPage = totalPages; if (currentPage < 1) currentPage = 1; const startIndex = (currentPage - 1) * commentsPerPage; const pageGroups = sortedGroups.slice(startIndex, startIndex + commentsPerPage); pageGroups.forEach(g => {{ if (g.parent) {{ const pDiv = document.createElement('div'); pDiv.className = 'comment-row'; if (g.parent.text.includes("삭제된 댓글")) pDiv.innerHTML = `<div class="comment-writer-box"></div><div class="comment-content-box">${{buildContentHTML(g.parent)}}</div><div class="comment-date-box"></div>`; else pDiv.innerHTML = `<div class="comment-writer-box">${{buildWriterHTML(g.parent.writer)}}</div><div class="comment-content-box">${{buildContentHTML(g.parent)}}</div><div class="comment-date-box">${{g.parent.date}}</div>`; listArea.appendChild(pDiv); }} g.replies.forEach(r => {{ const rDiv = document.createElement('div'); rDiv.className = 'comment-row reply-row'; if (r.text.includes("삭제된 댓글")) rDiv.innerHTML = `<div class="comment-writer-box"><span class="reply-icon">ㄴ</span></div><div class="comment-content-box">${{buildContentHTML(r)}}</div><div class="comment-date-box"></div>`; else rDiv.innerHTML = `<div class="comment-writer-box"><span class="reply-icon">ㄴ</span>${{buildWriterHTML(r.writer)}}</div><div class="comment-content-box">${{buildContentHTML(r)}}</div><div class="comment-date-box">${{r.date}}</div>`; listArea.appendChild(rDiv); }}); }}); if (totalPages > 1) {{ for (let i = 1; i <= totalPages; i++) {{ const btn = document.createElement('button'); btn.className = 'page-btn'; if (i === currentPage) btn.classList.add('active'); btn.innerText = i; btn.onclick = () => {{ currentPage = i; renderComments(); window.scrollTo(0, document.getElementById('comment-section').offsetTop - 20); }}; pageArea.appendChild(btn); }} }} }} function changeSort(type) {{ currentSort = type; document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active')); document.getElementById('sort-' + type).classList.add('active'); currentPage = 1; renderComments(); }} function changeLimit(val) {{ commentsPerPage = parseInt(val); currentPage = 1; renderComments(); }} document.querySelectorAll('a[href^="#"]').forEach(anchor => {{ anchor.addEventListener('click', function (e) {{ e.preventDefault(); document.querySelector(this.getAttribute('href')).scrollIntoView({{ behavior: 'smooth' }}); }}); }}); renderComments();</script></body></html>"""
 
     with open(html_path, "w", encoding="utf-8") as f: f.write(html_template)
@@ -507,7 +508,6 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
         creds = get_gcp_credentials()
         drive_service = build('drive', 'v3', credentials=creds)
         
-        # 🚀 [최우선 타겟 수집] 대기열 가동
         if force_nos:
             print("\n==========================================")
             print(" 🚀 [최우선 타겟 수집] 강제 재수집 대기열 가동 중...")
@@ -550,7 +550,6 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                     
                     is_completed = post_no in completed_posts
                     
-                    # 🚀 수정한 부분: 로컬 템플릿 초고속 재빌드 호출 적용 완료
                     if force_template_rebuild:
                         if is_completed:
                             print(f"⚡ [{post_no}번 글] 로컬 템플릿 초고속 갱신 중...")
@@ -584,13 +583,10 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
             
             print("\n🚀 데이터 GitHub Pages 배포 시도 중...")
             subprocess.run("git add .", shell=True)
-            subprocess.run('git commit -m "Auto Update with completely resolved forced re-archive logics"', shell=True)
+            subprocess.run('git commit -m "Auto Update: Github Pages Sync"', shell=True)
             subprocess.run("git push", shell=True)
             print("🎉 배포가 완전히 완료되었습니다!")
 
-# ==========================================
-# [ 프로그램 구동 진입점 ]
-# ==========================================
 if __name__ == "__main__":
     start_p = START_PAGE
     end_p = END_PAGE
