@@ -35,13 +35,10 @@
         .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 50px; margin-bottom: 30px; }
         .page-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .page-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
-        
-        /* 📱 수정한 부분: 모바일 뷰어 레이아웃 붕괴 및 폭주 방지 반응형 코드 */
         @media (max-width: 600px) { 
             body { padding: 15px 10px; }
             header h1 { font-size: 20px; }
             header p { font-size: 13px; }
-            /* minmax(0, 1fr)을 적용하여 가로폭이 뚫고 나가는 것을 완벽하게 방지합니다 */
             .bookshelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } 
             .book-info { padding: 12px; }
             .book-title { font-size: 13px; margin-bottom: 8px; height: 38px; line-height: 1.4; }
@@ -80,6 +77,7 @@
 <script>
     let archiveData = {}; let currentSort = 'latest'; let currentSubFilter = 'all'; let currentShelfPage = 1; const itemsPerPage = 24; 
     const CHOSUNG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    
     function getChosung(str) {
         let result = "";
         for (let i = 0; i < str.length; i++) {
@@ -88,6 +86,23 @@
         }
         return result.toLowerCase();
     }
+
+    // 🛡️ [버그 패치 완료] 디시 특유의 오늘 날짜(14:20 등 시간 표기) 완벽 해석기 도입
+    function parseDcDate(dateStr) {
+        if (!dateStr) return new Date(0);
+        dateStr = dateStr.trim();
+        // 시간만 표시되어 있는 경우 (예: "14:20") -> 오늘 날짜로 취급
+        if (dateStr.includes(':') && !dateStr.includes('.') && !dateStr.includes('-')) {
+            const now = new Date();
+            const parts = dateStr.split(':');
+            now.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
+            return now;
+        }
+        // 그 외 정상 날짜 표시 처리 (예: "2024.10.05")
+        const parsed = new Date(dateStr.replace(/\./g, '/').replace(/-/g, '/'));
+        return isNaN(parsed) ? new Date(0) : parsed;
+    }
+
     async function loadArchive() {
         const bookshelf = document.getElementById('bookshelf');
         try {
@@ -99,23 +114,25 @@
             bookshelf.innerHTML = `<div style="color:#dc2626; padding: 25px;">❌ 데이터를 불러오지 못했습니다. 파이썬을 한 번 실행해 데이터(completed_posts.json)를 만들어 주세요.</div>`;
         }
     }
+    
     function renderBookshelf() {
         const bookshelf = document.getElementById('bookshelf'); const paginationArea = document.getElementById('shelf-pagination');
         bookshelf.innerHTML = ''; paginationArea.innerHTML = '';
         const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
         const searchChosung = getChosung(searchQuery);
         let items = Object.keys(archiveData).map(key => ({ post_no: key, ...archiveData[key] }));
+        
         if (searchQuery) {
             items = items.filter(item => {
                 const titleLower = item.title.toLowerCase(); const titleChosung = getChosung(titleLower);
                 return titleLower.includes(searchQuery) || titleChosung.includes(searchChosung);
             });
         }
+        
         const now = new Date();
         if (currentSort === 'recom' && currentSubFilter !== 'all') {
             items = items.filter(item => {
-                if (!item.date) return false;
-                const postDate = new Date(item.date.replace(/\./g, '/'));
+                const postDate = parseDcDate(item.date);
                 const diffTime = Math.abs(now - postDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 if (currentSubFilter === 'week') return diffDays <= 7;
                 if (currentSubFilter === 'month') return diffDays <= 30;
@@ -123,18 +140,25 @@
                 return true;
             });
         }
+        
         if (currentSort === 'latest') {
             items.sort((a, b) => {
-                const dateA = a.date ? new Date(a.date.replace(/\./g, '/')) : new Date(0);
-                const dateB = b.date ? new Date(b.date.replace(/\./g, '/')) : new Date(0);
+                const dateA = parseDcDate(a.date);
+                const dateB = parseDcDate(b.date);
+                // 날짜가 완전히 같을 경우 글 번호로 2차 정렬 (최신 번호가 위로)
+                if (dateB.getTime() === dateA.getTime()) {
+                    return parseInt(b.post_no) - parseInt(a.post_no);
+                }
                 return dateB - dateA;
             });
         } else if (currentSort === 'recom') { items.sort((a, b) => (b.recommend || 0) - (a.recommend || 0)); }
+        
         const totalItems = items.length; const totalPages = Math.ceil(totalItems / itemsPerPage);
         if (currentShelfPage > totalPages) currentShelfPage = totalPages;
         if (currentShelfPage < 1) currentShelfPage = 1;
         const startIndex = (currentShelfPage - 1) * itemsPerPage; const pageItems = items.slice(startIndex, startIndex + itemsPerPage);
         document.getElementById('total-count').innerText = totalItems;
+        
         pageItems.forEach(item => {
             const card = document.createElement('a'); card.className = 'book-card';
             card.href = `./reader1.html?no=${item.post_no}`;
@@ -152,6 +176,7 @@
             `;
             bookshelf.appendChild(card);
         });
+        
         if (totalPages > 1) {
             for (let i = 1; i <= totalPages; i++) {
                 const btn = document.createElement('button'); btn.className = 'page-btn';
@@ -162,6 +187,7 @@
             }
         }
     }
+    
     function setSort(type) {
         currentSort = type; currentShelfPage = 1; 
         document.getElementById('btn-latest').classList.toggle('active', type === 'latest');
@@ -169,12 +195,14 @@
         document.getElementById('sub-tabs-area').classList.toggle('active', type === 'recom');
         renderBookshelf();
     }
+    
     function setSubFilter(filter) {
         currentSubFilter = filter; currentShelfPage = 1; 
         document.querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('sub-' + filter).classList.add('active');
         renderBookshelf();
     }
+    
     document.getElementById('search-input').addEventListener('input', () => { currentShelfPage = 1; renderBookshelf(); });
     loadArchive();
 </script>
