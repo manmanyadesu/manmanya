@@ -4,14 +4,14 @@
 GALLERY_ID = "comic_new6"               # 디시인사이드 갤러리 ID
 START_PAGE = 1                          # 기본 시작 페이지
 END_PAGE = 2                            # 기본 종료 페이지
-MAX_POSTS_TO_ARCHIVE = 30                # 기본 최대 수집 수량 (0 이면 제한 없음)
+MAX_POSTS_TO_ARCHIVE = 8                # 기본 최대 수집 수량 (0 이면 제한 없음)
 
 # 🚀 [템플릿 디자인 초고속 갱신용 토글]
-# False/True로 설정 시 이미지 업로드를 생략하고 기존 드라이브 주소로 모바일 반응형 템플릿만 일괄 교체합니다.
-FORCE_TEMPLATE_REBUILD = True          
+#  False   /True로 설정 시 이미지 업로드를 생략하고 기존 드라이브 주소로 모바일 반응형 템플릿만 일괄 교체합니다.
+FORCE_TEMPLATE_REBUILD = True         
 
 # 강제 전체 재수집(초기화) 대상 글 번호 목록 (몇 페이지에 있든 무조건 최우선 수집!)
-FORCE_REARCHIVE_POST_NOS = [ ]
+FORCE_REARCHIVE_POST_NOS = []
 
 # 구글 드라이브 및 로컬 백업 경로 설정
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
@@ -312,7 +312,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 has_poll = True
             except Exception: pass
 
-    # 댓글 수집
+    # 댓글 수집 및 디시 외부 전송 방지용 이미지 클라우드 업로드
     collected_comments = []
     seen_comment_ids = set()
     current_cmt_page = 1
@@ -322,6 +322,9 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     def parse_visible_comments(page_html):
         c_soup = BeautifulSoup(page_html, "html.parser")
         comment_items = c_soup.select("ul.cmt_list li")
+        
+        folder_id = get_or_create_drive_folder(drive_service)
+        
         for item in comment_items:
             c_id = item.get("id", "")
             if not c_id or not (c_id.startswith("comment_") or c_id.startswith("reply_")): continue
@@ -341,16 +344,30 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
             date_element = item.find("span", class_="date_time") or item.find("span", class_="date")
             date_text = date_element.text.strip() if date_element else ""
             
+            # 🛡️ [복구 완료] 디시콘 지연 로딩 data-src/data-original 파싱 추가로 엑박 완전 해결
             dccon_src = ""
             dccon = item.find("img", class_=re.compile("dccon"))
-            if dccon and dccon.get("src"): dccon_src = dccon.get("src")
+            if dccon: 
+                dccon_src = dccon.get("data-src") or dccon.get("data-original") or dccon.get("org-src") or dccon.get("src") or ""
             
+            # 🛡️ [복구 완료] 유저 업로드 댓글 짤방 지연 로딩 data-src 파싱 추가 및 구글 드라이브 업로드로 이미지 깨짐 완치
             comment_img_src = ""
             for img_el in item.find_all("img"):
-                img_src = img_el.get("src")
+                img_src = img_el.get("data-original") or img_el.get("data-src") or img_el.get("org-src") or img_el.get("src")
                 if img_src and "dccon" not in img_src and "option_icon" not in img_src:
-                    comment_img_src = img_src
+                    try:
+                        c_img_res = img_session.get(img_src, headers=img_headers, timeout=10)
+                        if c_img_res.status_code == 200:
+                            ext = img_src.split(".")[-1].split("?")[0].lower()
+                            if ext not in ["jpg", "png", "gif", "webp"]: ext = "jpg"
+                            temp_path = f"{img_dir}/cmt_{c_id}.{ext}"
+                            with open(temp_path, "wb") as f: f.write(c_img_res.content)
+                            _, comment_img_src = upload_file_to_drive(drive_service, temp_path, folder_id)
+                            os.remove(temp_path)
+                    except Exception as e:
+                        print(f"      ⚠️ 댓글 이미지 우회 전송 오류: {e}")
                     break
+                    
             collected_comments.append({"writer": full_writer, "text": txt, "is_reply": is_reply, "dccon": dccon_src, "comment_img": comment_img_src, "date": date_text})
 
     while True:
