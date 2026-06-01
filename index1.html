@@ -35,7 +35,23 @@
         .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 50px; margin-bottom: 30px; }
         .page-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .page-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
-        @media (max-width: 480px) { .bookshelf-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } }
+        
+        /* 📱 수정한 부분: 모바일 뷰어 레이아웃 붕괴 및 폭주 방지 반응형 코드 */
+        @media (max-width: 600px) { 
+            body { padding: 15px 10px; }
+            header h1 { font-size: 20px; }
+            header p { font-size: 13px; }
+            /* minmax(0, 1fr)을 적용하여 가로폭이 뚫고 나가는 것을 완벽하게 방지합니다 */
+            .bookshelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } 
+            .book-info { padding: 12px; }
+            .book-title { font-size: 13px; margin-bottom: 8px; height: 38px; line-height: 1.4; }
+            .book-meta { flex-direction: column; gap: 4px; font-size: 11px; }
+            .controls { margin-bottom: 20px; }
+            .search-bar { font-size: 14px; padding: 12px; }
+            .tabs-container { justify-content: center; }
+            .tab-btn { padding: 8px 12px; font-size: 12px; }
+            .sub-btn { padding: 6px 10px; font-size: 11px; }
+        }
     </style>
 </head>
 <body>
