@@ -1,5 +1,29 @@
+# ==============================================================================
+# [ 사용자 기본 설정 영역 (원하시는 대로 수정 후 사용하세요) ]
+# ==============================================================================
+GALLERY_ID = "comic_new6"               # 디시인사이드 갤러리 ID
+START_PAGE = 1                          # 기본 시작 페이지
+END_PAGE = 2                            # 기본 종료 페이지
+MAX_POSTS_TO_ARCHIVE = 8                # 기본 최대 수집 수량 (0 이면 제한 없음)
+
+# 🚀 [콘솔/테스트 모드 전용 토글]
+CLI_MODE = True                        # True로 변경하면 GUI 창 없이 옛날처럼 콘솔에서 즉시 수집을 시작합니다.
+FORCE_TEMPLATE_REBUILD = True          # True로 변경하면 구글드라이브 이미지 전송을 패스하고 템플릿만 초고속 일괄 갱신합니다.
+
+# 강제 전체 재수집(초기화) 대상 글 번호 목록
+FORCE_REARCHIVE_POST_NOS = ["4605771"]
+
+# 구글 드라이브 및 로컬 백업 경로 설정
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
+BASE_DIR = "./archive"
+CHECKPOINT_FILE = f"{BASE_DIR}/completed_posts.json"
+LOCK_FILE = f"{BASE_DIR}/crawler.lock"
+SETTINGS_FILE = f"{BASE_DIR}/gui_settings.json"
+# ==============================================================================
+
 import os
 import re
+import sys
 import time
 import json
 import random
@@ -9,6 +33,8 @@ import httplib2
 import subprocess
 import socket
 import threading
+import tkinter as tk
+from tkinter import ttk, messagebox
 import google_auth_httplib2
 from PIL import Image
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -21,49 +47,23 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
-# 구글 API 무한 대기 방지용 타임아웃 설정
 socket.setdefaulttimeout(15)
-
-# ==========================================
-# [ 설정 영역 ] 
-# ==========================================
-GALLERY_ID = "comic_new6"
-START_PAGE = 1
-END_PAGE = 2
-MAX_POSTS_TO_ARCHIVE = 8
-
-FORCE_REARCHIVE_POST_NOS = []
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
-BASE_DIR = "./archive"
-CHECKPOINT_FILE = f"{BASE_DIR}/completed_posts.json"
-LOCK_FILE = f"{BASE_DIR}/crawler.lock"
-# ==========================================
 
 os.makedirs(BASE_DIR, exist_ok=True)
 
-if os.path.exists(LOCK_FILE):
-    try:
-        with open(LOCK_FILE, "r") as f:
-            old_pid = int(f.read().strip())
-        is_running = False
-        try:
-            out = subprocess.check_output(f'tasklist /FI "PID eq {old_pid}"', shell=True, stderr=subprocess.DEVNULL)
-            out_str = out.decode('utf-8', errors='ignore') + out.decode('cp949', errors='ignore')
-            for line in out_str.splitlines():
-                if str(old_pid) in line:
-                    is_running = True
-                    break
-        except Exception: is_running = False
-        if is_running:
-            print(f"\n⚠️ 이미 가동 중인 아카이버 프로세스가 있습니다. 실행을 안전하게 취소합니다.")
-            exit()
-        else: os.remove(LOCK_FILE)
-    except Exception:
-        try: os.remove(LOCK_FILE)
-        except Exception: pass
+# GUI 로그 출력을 위한 리다이렉터 클래스
+class TextRedirector:
+    def __init__(self, text_widget):
+        self.text_widget = text_widget
+    def write(self, str):
+        self.text_widget.insert(tk.END, str)
+        self.text_widget.see(tk.END)
+    def flush(self):
+        pass
 
-with open(LOCK_FILE, "w") as f: f.write(str(os.getpid()))
-
+# ==========================================
+# [ 백엔드 핵심 수집 엔진 ]
+# ==========================================
 def get_gcp_credentials():
     creds = None
     if os.path.exists('token.json'):
@@ -89,7 +89,9 @@ def save_checkpoint(completed_dict):
         json.dump(completed_dict, f, ensure_ascii=False, indent=4)
 
 def release_lock():
-    if os.path.exists(LOCK_FILE): os.remove(LOCK_FILE)
+    if os.path.exists(LOCK_FILE):
+        try: os.remove(LOCK_FILE)
+        except Exception: pass
 
 def get_or_create_drive_folder(drive_service, folder_name="Manga_Archive"):
     query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -130,10 +132,7 @@ def upload_file_to_drive(drive_service, file_path, folder_id, thread_http=None):
         file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute(http=thread_http)
     else:
         file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        
-    file_id = file.get('id')
-    direct_link = f"https://lh3.googleusercontent.com/d/{file_id}"
-    return file_id, direct_link
+    return file.get('id'), f"https://lh3.googleusercontent.com/d/{file.get('id')}"
 
 def archive_single_post(post_no, page, drive_service, creds, update_comments_only=False):
     target_url = f"https://gall.dcinside.com/board/view/?id={GALLERY_ID}&no={post_no}"
@@ -146,26 +145,24 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     has_poll = False
     image_count = 0
     thumbnail_url = ""
+    poll_drive_url = ""
 
-    # ⚠️ [공통 흐름] 동기화든 최초든 무조건 실시간 최신 통계 데이터 파싱
     try:
         page.goto(target_url, timeout=20000, wait_until="domcontentloaded")
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         time.sleep(1.0)
     except Exception as e:
-        print(f"      ⚠️ 페이지 로딩 대기 제한 초과 (작업 강제 수행): {e}")
+        print(f"      ⚠️ 로딩 대기 초과 (작업 강제 수행): {e}")
 
     full_html = page.content()
     soup = BeautifulSoup(full_html, "html.parser")
-    
     if not soup.find("div", class_="write_div"):
-        print(f" ❌ [{post_no}번 글] 접근이 불가능하거나 삭제된 글입니다.")
+        print(f" ❌ [{post_no}번 글] 원본 글을 찾을 수 없습니다.")
         return False, None
 
-    # 실시간 최신 헤더 메타데이터 수집
+    # 실시간 최신 통계 데이터 크롤링
     title_el = soup.find("span", class_="title_subject")
-    title = title_el.text.strip() if title_el else f"만화갤러리 {post_no}번 글"
-    
+    title = title_el.text.strip() if title_el else f"만화 {post_no}번"
     writer_el = soup.select_one(".gall_writer .nickname")
     writer_top = writer_el.text.strip() if writer_el else "ㅇㅇ"
     ip_el = soup.select_one(".gall_writer .ip")
@@ -175,11 +172,8 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     
     views_el = soup.select_one(".gall_count")
     views_top = views_el.text.strip() if views_el else "조회 0"
-    views_val = 0
-    if views_el:
-        v_match = re.search(r"\d+", views_el.text)
-        if v_match: views_val = int(v_match.group())
-        
+    views_val = int(re.search(r"\d+", views_top).group()) if re.search(r"\d+", views_top) else 0
+    
     recommend_el = soup.select_one(".gall_reply_num")
     recommend_top = recommend_el.text.strip() if recommend_el else "추천 0"
     comment_count_el = soup.select_one(".gall_comment")
@@ -187,44 +181,42 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     
     up_el = soup.select_one(".up_num")
     upvotes = up_el.text.strip() if up_el else "0"
-    recommend_val = 0
-    if up_el:
-        r_match = re.search(r"\d+", up_el.text)
-        if r_match: recommend_val = int(r_match.group())
-        
+    recommend_val = int(re.search(r"\d+", upvotes).group()) if re.search(r"\d+", upvotes) else 0
+    
     down_el = soup.select_one(".down_num")
     downvotes = down_el.text.strip() if down_el else "0"
 
-    # 🔄 [댓글 동기화 모드 분기] 이미 올려둔 만화 본문 이미지는 유지하고 댓글만 교체
+    # 🔄 [댓글 동기화 / 템플릿만 초고속 갱신 모드] 이미지 전송 단계를 생략하고 HTML만 재생성
     if update_comments_only and os.path.exists(html_path):
-        print(f"\n🔄 [{post_no}번 글] 본문 보존 및 실시간 데이터 동기화 갱신")
+        print(f"🔄 [{post_no}번 글] 이미지 전송 패스 및 템플릿 초고속 재빌드 중...")
         try:
             with open(html_path, "r", encoding="utf-8") as f:
                 old_soup = BeautifulSoup(f.read(), "html.parser")
             content_el = old_soup.find("div", class_="content")
-            if content_el: 
+            if content_el:
                 content_area_html = str(content_el.decode_contents())
             else:
-                update_comments_only = False # 백업 에러 시 전체 다운로드 전환
+                update_comments_only = False
                 
             poll_el = old_soup.find("div", class_="poll-container")
-            if poll_el: has_poll = True
-            
+            if poll_el:
+                has_poll = True
+                poll_img = poll_el.find("img")
+                if poll_img: poll_drive_url = poll_img.get("src", "")
+                
             completed_posts = load_checkpoint()
             image_count = completed_posts.get(post_no, {}).get("image_count", 0)
             thumbnail_url = completed_posts.get(post_no, {}).get("thumbnail", "")
-        except Exception as e:
-            print(f" ⚠️ 백업 데이터 유실로 전체 모드로 재수집합니다: {e}")
+        except Exception:
             update_comments_only = False
 
-    # 📸 [최초 수집 모드] 이미지 병렬 전송 실행
+    # 📸 [최초 전체 수집 모드] 이미지 전송 정상 가동
     if not update_comments_only:
         content_area = soup.find("div", class_="write_div")
         img_tags = content_area.find_all("img") if content_area else []
         img_session = requests.Session()
         img_headers = {"User-Agent": "Mozilla/5.0", "Referer": target_url}
         
-        # 다운로드 멀티스레드 가동
         def download_worker(idx, img_el):
             img_url = img_el.get("data-original") or img_el.get("data-src") or img_el.get("src")
             if not img_url: return None
@@ -247,10 +239,8 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 if res: downloaded_mangas.append(res)
 
         folder_id = get_or_create_drive_folder(drive_service)
-        image_count = len(downloaded_mangas)
         uploaded_mapping = {}
 
-        # 압축 및 클라우드 업로드 병렬 전송
         def upload_worker(item):
             idx, raw_path, ext, img_el = item
             compressed_path = f"{img_dir}/manga_{idx+1}.jpg"
@@ -258,7 +248,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 compress_image(raw_path, compressed_path)
                 thread_http = google_auth_httplib2.AuthorizedHttp(creds, http=httplib2.Http())
                 file_id, direct_link = upload_file_to_drive(drive_service, compressed_path, folder_id, thread_http)
-                
                 if os.path.exists(raw_path): os.remove(raw_path)
                 if os.path.exists(compressed_path): os.remove(compressed_path)
                 return (idx, file_id, direct_link, img_el)
@@ -273,6 +262,13 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 res = f.result()
                 if res: uploaded_results.append(res)
 
+        # 🛡️ [자가 치유 안전 장치] 업로드 누락 발생 시, 완료 등록을 거부하고 수동 데이터 파괴 방지
+        if len(uploaded_results) < len(downloaded_mangas) or len(downloaded_mangas) == 0:
+            print(f" ⚠️ [{post_no}번 글] 일부 만화 이미지 전송 실패 ({len(uploaded_results)}/{len(downloaded_mangas)} 성공)")
+            print("   안전을 위해 본 게시글을 미완료 상태로 두고 다음 실행 때 안전하게 처음부터 재시도합니다.")
+            shutil.rmtree(img_dir, ignore_errors=True)
+            return False, None
+
         for idx, file_id, direct_link, img_el in uploaded_results:
             img_el["src"] = direct_link
             if img_el.has_attr("data-original"): del img_el["data-original"]
@@ -280,12 +276,12 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
             uploaded_mapping[f"manga_{idx+1}.jpg"] = file_id
 
         content_area_html = str(content_area) if content_area else ""
-
+        image_count = len(uploaded_results)
+        
         if uploaded_mapping:
             first_key = sorted(list(uploaded_mapping.keys()))[0]
             thumbnail_url = f"https://lh3.googleusercontent.com/d/{uploaded_mapping[first_key]}"
 
-        # 설문조사 투표 이미지 캡처
         poll_drive_url = ""
         poll_frame = next((f for f in page.frames if "poll" in f.url), None)
         if poll_frame:
@@ -301,7 +297,7 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 has_poll = True
             except Exception: pass
 
-    # 댓글 실시간 추적 수집
+    # 댓글 실시간 수집
     collected_comments = []
     seen_comment_ids = set()
     current_cmt_page = 1
@@ -311,40 +307,28 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
     def parse_visible_comments(page_html):
         c_soup = BeautifulSoup(page_html, "html.parser")
         comment_items = c_soup.select("ul.cmt_list li")
-        
         for item in comment_items:
             c_id = item.get("id", "")
             if not c_id or not (c_id.startswith("comment_") or c_id.startswith("reply_")): continue
             if c_id in seen_comment_ids: continue
             seen_comment_ids.add(c_id)
-            
             is_reply = False
-            if item.find_parent("ul", class_=re.compile("reply")) or c_id.startswith("reply_") or "reply" in "".join(item.get("class", [])).lower():
-                is_reply = True
-                
+            if item.find_parent("ul", class_=re.compile("reply")) or c_id.startswith("reply_") or "reply" in "".join(item.get("class", [])).lower(): is_reply = True
             for nested_reply in item.find_all("ul", class_=re.compile("reply")): nested_reply.extract()
-
             if "cmt_blank" in " ".join(item.get("class", [])).lower() or "삭제된" in item.text:
                 collected_comments.append({"writer": "", "text": "삭제된 댓글입니다.", "is_reply": is_reply, "dccon": "", "comment_img": "", "date": ""})
                 continue
-            
             writer = item.find("span", class_="nickname")
             ip_tag = item.find("span", class_="ip")
             full_writer = f"{writer.text.strip() if writer else 'ㅇㅇ'} {ip_tag.text.strip() if ip_tag else ''}".strip()
-            
             txt_element = item.find("p", class_="usertxt")
-            if txt_element:
-                for br in txt_element.find_all("br"): br.replace_with("\n")
-                txt = txt_element.text.strip()
-            else: txt = ""
-            
+            txt = txt_element.text.strip() if txt_element else ""
             date_element = item.find("span", class_="date_time") or item.find("span", class_="date")
             date_text = date_element.text.strip() if date_element else ""
             
             dccon_src = ""
             dccon = item.find("img", class_=re.compile("dccon"))
-            if dccon and dccon.get("src"):
-                dccon_src = dccon.get("src")
+            if dccon and dccon.get("src"): dccon_src = dccon.get("src")
             
             comment_img_src = ""
             for img_el in item.find_all("img"):
@@ -352,7 +336,6 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 if img_src and "dccon" not in img_src and "option_icon" not in img_src:
                     comment_img_src = img_src
                     break
-
             collected_comments.append({"writer": full_writer, "text": txt, "is_reply": is_reply, "dccon": dccon_src, "comment_img": comment_img_src, "date": date_text})
 
     while True:
@@ -370,9 +353,8 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
                 break
         if not clicked: break
 
-    poll_section_html = f"""<div class="poll-container"><h3>🗳️ 본문 투표 백업</h3><img src="{poll_drive_url}" style="max-width:100%; display:block; margin:0 auto;"></div>""" if (not update_comments_only and has_poll) else ""
+    poll_section_html = f"""<div class="poll-container"><h3>🗳️ 본문 투표 백업</h3><img src="{poll_drive_url}" style="max-width:100%; display:block; margin:0 auto;"></div>""" if (poll_drive_url or (not update_comments_only and has_poll)) else ""
 
-    # 🔗 [완벽 복구] 제목 클릭 시 디시 원문 보기 링크 추가 및 헤더 메타 동기화 완료
     html_template = f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>{title} - 아카이브</title><style>body {{ font-family: 'Malgun Gothic', sans-serif; margin: 40px; background-color: #f5f6f7; color: #333; }}.container {{ max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}.post-header {{ border-bottom: 1px solid #ccc; padding-bottom: 15px; margin-bottom: 20px; }}.post-title {{ font-size: 22px; font-weight: bold; color: #222; margin-bottom: 12px; }}.post-title a {{ text-decoration: none; color: inherit; }}.post-title a:hover {{ color: #1d4ed8; }}.post-meta-wrap {{ display: flex; justify-content: space-between; font-size: 13px; color: #666; }}.meta-left .writer {{ font-weight: bold; color: #333; margin-right: 10px; }}.comment-jump-btn {{ background: #f3f3f3; border: 1px solid #e1e1e1; border-radius: 15px; padding: 3px 12px; color: #333; text-decoration: none; font-weight: bold; font-size: 12px; }}.content {{ line-height: 1.8; font-size: 16px; margin-top: 30px; padding-bottom: 40px; }}.content img {{ max-width: 100%; height: auto; display: block; margin: 15px auto; }}.vote-box-container {{ border: 1px solid #ddd; padding: 30px; border-radius: 8px; margin: 40px auto; max-width: 400px; display: flex; justify-content: center; align-items: center; gap: 30px; background: #fff; }}.vote-number {{ font-size: 22px; font-weight: bold; width: 40px; text-align: center; }}.vote-circles {{ display: flex; gap: 15px; }}.circle-btn {{ width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; color: white; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }}.circle-up {{ background: #3b5998; }} .circle-down {{ background: #a5a5a5; }}.comments-header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b5998; padding-bottom: 10px; margin-top: 40px; }}.comments-title {{ font-size: 16px; font-weight: bold; color: #3b5998; }}.control-btn {{ background: none; border: none; font-size: 13px; cursor: pointer; font-weight: bold; color: #999; margin-right: 5px; }}.control-btn.active {{ color: #3b5998; }}.comment-list-area {{ border-top: 1px solid #3b5998; }}.comment-row {{ display: flex; border-bottom: 1px solid #e2e2e2; padding: 12px 0; align-items: flex-start; }}.comment-writer-box {{ width: 160px; flex-shrink: 0; padding: 0 10px; color: #333; font-weight: bold; font-size: 13px; word-break: break-all; }}.comment-writer-box span.ip {{ color: #999; font-weight: normal; font-size: 11px; }}.comment-content-box {{ flex-grow: 1; padding: 0 10px; font-size: 13px; color: #333; word-break: break-all; }}.comment-content-box img {{ max-width: 200px; border-radius: 4px; display: block; margin-top: 5px; }}.comment-date-box {{ width: 100px; flex-shrink: 0; text-align: right; color: #999; font-size: 12px; padding-right: 10px; }}.reply-row {{ background-color: #f9f9f9; padding-left: 0; border-left: 3px solid #ddd; }}.reply-row .comment-writer-box {{ width: 180px; padding-left: 35px; position: relative; }}.reply-icon {{ position: absolute; left: 12px; top: 0; color: #3b5998; font-weight: 900; }}.deleted-text {{ color: #aaa; font-style: normal; }}.pagination {{ display: flex; justify-content: center; gap: 5px; margin-top: 20px; }}.page-btn {{ border: 1px solid #ddd; background: white; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 13px; }}.page-btn.active {{ background: #3b5998; color: white; font-weight: bold; }}</style></head><body><div class="container"><div class="post-header"><div class="post-title"><a href="{target_url}" target="_blank" title="디시인사이드 원문 글로 가기">{title} <span style="font-size:14px; color:#1d4ed8; font-weight:normal; margin-left:6px; vertical-align:middle;">🔗 원문 보기</span></a></div><div class="post-meta-wrap"><div class="meta-left"><span class="writer">{writer_top} {ip_top}</span><span class="date">{date_top}</span></div><div class="meta-right"><span>{views_top}</span> | <span>{recommend_top}</span> | <a href="#comment-section" class="comment-jump-btn">{comment_count_top}</a></div></div></div><div class="content">{content_area_html}</div>{poll_section_html}<div class="vote-box-container"><div class="vote-number" style="color:#d31900;">{upvotes}</div><div class="vote-circles"><div class="circle-btn circle-up"><span style="font-size:22px; color:#ffeb3b;">★</span><span>개념</span></div><div class="circle-btn circle-down"><span style="font-size:22px; color:white;">⬇</span><span>비추</span></div></div><div class="vote-number" style="color:#444;">{downvotes}</div></div><div id="comment-section"><div class="comments-header"><div class="comments-title">댓글 <span id="total-count" style="color:#d31900;">0</span>개</div><div class="comment-controls"><button class="control-btn active" id="sort-old" onclick="changeSort('old')">등록순</button><button class="control-btn" id="sort-new" onclick="changeSort('new')">최신순</button><button class="control-btn" id="sort-reply" onclick="changeSort('reply')">답글순</button><select id="limit-select" onchange="changeLimit(this.value)" style="padding: 2px; font-size: 12px; margin-left: 10px;"><option value="30">30개</option><option value="50" selected>50개</option><option value="100">100개</option><option value="9999">전체 보기</option></select></div></div><div class="comment-list-area" id="comment-list"></div><div class="pagination" id="pagination-buttons"></div></div></div><script>const rawComments = {json.dumps(collected_comments, ensure_ascii=False)}; let currentSort = 'old', commentsPerPage = 50, currentPage = 1, commentGroups = [], currentGroup = null; rawComments.forEach(c => {{ if (!c.is_reply) {{ currentGroup = {{ parent: c, replies: [] }}; commentGroups.push(currentGroup); }} else {{ if (currentGroup) currentGroup.replies.push(c); else {{ currentGroup = {{ parent: null, replies: [c] }}; commentGroups.push(currentGroup); }} }} }}); function buildWriterHTML(writerStr) {{ let match = writerStr.match(/(.+)\\s(\\([0-9.]+\\))$/); return match ? `${{match[1]}} <span class="ip">${{match[2]}}</span>` : writerStr; }} function buildContentHTML(c) {{ if (c.text.includes("삭제된 댓글")) return `<span class="deleted-text">${{c.text}}</span>`; let html = c.text.replace(/\\n/g, "<br>"); if (c.dccon) html += `<br><img src="${{c.dccon}}" style="width:85px; height:85px; margin-top:5px;">`; if (c.comment_img) html += `<br><img src="${{c.comment_img}}" style="margin-top:5px; max-width:200px; border-radius:4px;">`; return html; }} function renderComments() {{ const listArea = document.getElementById('comment-list'); const pageArea = document.getElementById('pagination-buttons'); listArea.innerHTML = ''; pageArea.innerHTML = ''; document.getElementById('total-count').innerText = rawComments.filter(c => !c.text.includes("삭제된 댓글")).length; if (rawComments.length === 0) return; let sortedGroups = [...commentGroups]; if (currentSort === 'new') sortedGroups.reverse(); else if (currentSort === 'reply') sortedGroups.sort((a, b) => b.replies.length - a.replies.length); const totalPages = Math.ceil(sortedGroups.length / commentsPerPage); if (currentPage > totalPages) currentPage = totalPages; if (currentPage < 1) currentPage = 1; const startIndex = (currentPage - 1) * commentsPerPage; const pageGroups = sortedGroups.slice(startIndex, startIndex + commentsPerPage); pageGroups.forEach(g => {{ if (g.parent) {{ const pDiv = document.createElement('div'); pDiv.className = 'comment-row'; if (g.parent.text.includes("삭제된 댓글")) pDiv.innerHTML = `<div class="comment-writer-box"></div><div class="comment-content-box">${{buildContentHTML(g.parent)}}</div><div class="comment-date-box"></div>`; else pDiv.innerHTML = `<div class="comment-writer-box">${{buildWriterHTML(g.parent.writer)}}</div><div class="comment-content-box">${{buildContentHTML(g.parent)}}</div><div class="comment-date-box">${{g.parent.date}}</div>`; listArea.appendChild(pDiv); }} g.replies.forEach(r => {{ const rDiv = document.createElement('div'); rDiv.className = 'comment-row reply-row'; if (r.text.includes("삭제된 댓글")) rDiv.innerHTML = `<div class="comment-writer-box"><span class="reply-icon">ㄴ</span></div><div class="comment-content-box">${{buildContentHTML(r)}}</div><div class="comment-date-box"></div>`; else rDiv.innerHTML = `<div class="comment-writer-box"><span class="reply-icon">ㄴ</span>${{buildWriterHTML(r.writer)}}</div><div class="comment-content-box">${{buildContentHTML(r)}}</div><div class="comment-date-box">${{r.date}}</div>`; listArea.appendChild(rDiv); }}); }}); if (totalPages > 1) {{ for (let i = 1; i <= totalPages; i++) {{ const btn = document.createElement('button'); btn.className = 'page-btn'; if (i === currentPage) btn.classList.add('active'); btn.innerText = i; btn.onclick = () => {{ currentPage = i; renderComments(); window.scrollTo(0, document.getElementById('comment-section').offsetTop - 20); }}; pageArea.appendChild(btn); }} }} }} function changeSort(type) {{ currentSort = type; document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active')); document.getElementById('sort-' + type).classList.add('active'); currentPage = 1; renderComments(); }} function changeLimit(val) {{ commentsPerPage = parseInt(val); currentPage = 1; renderComments(); }} document.querySelectorAll('a[href^="#"]').forEach(anchor => {{ anchor.addEventListener('click', function (e) {{ e.preventDefault(); document.querySelector(this.getAttribute('href')).scrollIntoView({{ behavior: 'smooth' }}); }}); }}); renderComments();</script></body></html>"""
 
     with open(html_path, "w", encoding="utf-8") as f: f.write(html_template)
@@ -386,92 +368,292 @@ def archive_single_post(post_no, page, drive_service, creds, update_comments_onl
         "image_count": image_count,
         "thumbnail": thumbnail_url
     }
-
-    # 로컬 하드 0MB 유지를 위한 원본 이미지 폴더 비우기
     if not update_comments_only:
         shutil.rmtree(img_dir, ignore_errors=True)
-    
-    if update_comments_only:
-        print(f" ✅ [{post_no}번 글] 최신 통계 및 댓글 동기화 완료! (실시간 댓글수: {len(collected_comments)}개)")
-    else:
-        print(f" ✅ [{post_no}번 글] 최초 전체 수집 완료! ({image_count}개 이미지, {len(collected_comments)}개 댓글)")
-        
     return True, post_meta
 
-# 메인 실행부
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    list_page = browser.new_page()
-    post_page = browser.new_page()
-    
-    list_page.on("dialog", lambda dialog: dialog.dismiss())
-    post_page.on("dialog", lambda dialog: dialog.dismiss())
-    
-    def block_heavy_resources(route):
-        if route.request.resource_type in ["font", "media"]: route.abort()
-        else: route.continue_()
-            
-    list_page.route("**/*", block_heavy_resources)
-    post_page.route("**/*", block_heavy_resources)
-    
-    creds = get_gcp_credentials()
-    drive_service = build('drive', 'v3', credentials=creds)
-    
+# ==========================================
+# [ 비가시성 수집 제어부 ]
+# ==========================================
+def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebuild=False):
     completed_posts = load_checkpoint()
-    archive_count = 0 
-    
-    try:
-        for page_num in range(START_PAGE, END_PAGE + 1):
-            print(f"\n==========================================")
-            print(f" 📖 개념글 {page_num}페이지 탐색 중...")
-            list_page.goto(f"https://gall.dcinside.com/board/lists/?id={GALLERY_ID}&exception_mode=recommend&page={page_num}")
-            list_page.wait_for_load_state("domcontentloaded")
-            
-            soup = BeautifulSoup(list_page.content(), "html.parser")
-            for row in soup.select("tr.us-post:not(.notice)"):
-                if MAX_POSTS_TO_ARCHIVE and archive_count >= MAX_POSTS_TO_ARCHIVE: break
-                    
-                no_el = row.select_one(".gall_num")
-                if not no_el or not no_el.text.strip().isdigit(): continue
-                post_no = no_el.text.strip()
-                
-                reply_el = row.select_one(".reply_num")
-                current_cmt_count = int(re.search(r"\d+", reply_el.text).group()) if reply_el and re.search(r"\d+", reply_el.text) else 0
-                
-                if post_no in FORCE_REARCHIVE_POST_NOS:
-                    if post_no in completed_posts: del completed_posts[post_no]
-                    is_completed = False
-                else:
-                    is_completed = post_no in completed_posts
-                
-                if is_completed:
-                    saved_cmt_count = completed_posts[post_no].get("comment_count", 0)
-                    if current_cmt_count <= saved_cmt_count: continue
-                    success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, update_comments_only=True)
-                    if success: completed_posts[post_no]["comment_count"] = current_cmt_count
-                else:
-                    success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, update_comments_only=False)
-                    if success:
-                        completed_posts[post_no] = {"comment_count": current_cmt_count, **post_meta}
+    force_nos = [n.strip() for n in force_nos_str.split(",") if n.strip()]
+    archive_count = 0
 
-                if success:
-                    save_checkpoint(completed_posts)
-                    archive_count += 1
-                    
-                    sleep_time = round(random.uniform(1.5, 3.0), 1)
-                    time.sleep(sleep_time)
-
-            if MAX_POSTS_TO_ARCHIVE and archive_count >= MAX_POSTS_TO_ARCHIVE: break
-                
-    except KeyboardInterrupt:
-        print("\n🛑 작업이 중단되었습니다.")
-    finally:
-        save_checkpoint(completed_posts)
-        release_lock()
-        browser.close()
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        list_page = browser.new_page()
+        post_page = browser.new_page()
         
-        print("\n🚀 수집된 아카이브 데이터를 GitHub Pages로 배포 및 전송합니다...")
-        subprocess.run("git add .", shell=True)
-        subprocess.run('git commit -m "Auto Update with restored anchor and source links"', shell=True)
-        subprocess.run("git push", shell=True)
-        print("🎉 배포 완료!")
+        list_page.on("dialog", lambda dialog: dialog.dismiss())
+        post_page.on("dialog", lambda dialog: dialog.dismiss())
+        
+        def block_heavy_resources(route):
+            if route.request.resource_type in ["font", "media"]: route.abort()
+            else: route.continue_()
+                
+        list_page.route("**/*", block_heavy_resources)
+        post_page.route("**/*", block_heavy_resources)
+        
+        creds = get_gcp_credentials()
+        drive_service = build('drive', 'v3', credentials=creds)
+        
+        try:
+            for page_num in range(start_p, end_p + 1):
+                print(f"\n==========================================")
+                print(f" 📖 개념글 {page_num}페이지 탐색 중...")
+                list_page.goto(f"https://gall.dcinside.com/board/lists/?id={GALLERY_ID}&exception_mode=recommend&page={page_num}")
+                list_page.wait_for_load_state("domcontentloaded")
+                
+                soup = BeautifulSoup(list_page.content(), "html.parser")
+                for row in soup.select("tr.us-post:not(.notice)"):
+                    if max_p and archive_count >= max_p: break
+                        
+                    no_el = row.select_one(".gall_num")
+                    if not no_el or not no_el.text.strip().isdigit(): continue
+                    post_no = no_el.text.strip()
+                    
+                    reply_el = row.select_one(".reply_num")
+                    current_cmt_count = int(re.search(r"\d+", reply_el.text).group()) if reply_el and re.search(r"\d+", reply_el.text) else 0
+                    
+                    if post_no in force_nos:
+                        if post_no in completed_posts: del completed_posts[post_no]
+                        is_completed = False
+                    else:
+                        is_completed = post_no in completed_posts
+                    
+                    if force_template_rebuild:
+                        if is_completed:
+                            success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, update_comments_only=True)
+                            if success:
+                                completed_posts[post_no]["comment_count"] = current_cmt_count
+                                archive_count += 1
+                        continue
+
+                    if is_completed:
+                        saved_cmt_count = completed_posts[post_no].get("comment_count", 0)
+                        if current_cmt_count <= saved_cmt_count: continue
+                        success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, update_comments_only=True)
+                        if success: completed_posts[post_no]["comment_count"] = current_cmt_count
+                    else:
+                        success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, update_comments_only=False)
+                        if success:
+                            completed_posts[post_no] = {"comment_count": current_cmt_count, **post_meta}
+
+                    if success:
+                        save_checkpoint(completed_posts)
+                        archive_count += 1
+                        time.sleep(round(random.uniform(1.5, 3.0), 1))
+
+                if max_p and archive_count >= max_p: break
+        except Exception as e:
+            print(f"⚠️ 가동 중 오류 발생: {e}")
+        finally:
+            save_checkpoint(completed_posts)
+            release_lock()
+            browser.close()
+            
+            print("\n🚀 데이터 GitHub Pages 배포 시도 중...")
+            subprocess.run("git add .", shell=True)
+            subprocess.run('git commit -m "Auto Update with restored template structures"', shell=True)
+            subprocess.run("git push", shell=True)
+            print("🎉 배포가 완전히 완료되었습니다!")
+
+# ==========================================
+# [ GUI 메인 윈도우 인터페이스 ]
+# ==========================================
+class AppGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("만갤 아카이브 관리 콘솔")
+        self.root.geometry("640x700")
+        self.root.resizable(False, False)
+        
+        # 최상단 설정 전역 상수로 GUI 변수 세팅
+        self.start_page_var = tk.StringVar(value=str(START_PAGE))
+        self.end_page_var = tk.StringVar(value=str(END_PAGE))
+        self.max_posts_var = tk.StringVar(value=str(MAX_POSTS_TO_ARCHIVE))
+        self.force_nos_var = tk.StringVar(value=",".join(FORCE_REARCHIVE_POST_NOS))
+        self.schedule_type_var = tk.StringVar(value="하루 2번")
+        self.force_template_var = tk.BooleanVar(value=False)
+        
+        self.load_settings()
+        self.create_widgets()
+        
+    def create_widgets(self):
+        lbl_frame = tk.LabelFrame(self.root, text="⚙️ 수집기 설정", font=("Malgun Gothic", 10, "bold"), padx=15, pady=10)
+        lbl_frame.pack(fill="x", padx=15, pady=10)
+        
+        tk.Label(lbl_frame, text="시작 페이지:").grid(row=0, column=0, sticky="w", pady=5)
+        tk.Entry(lbl_frame, textvariable=self.start_page_var, width=10).grid(row=0, column=1, sticky="w", padx=10, pady=5)
+        
+        tk.Label(lbl_frame, text="종료 페이지:").grid(row=0, column=2, sticky="w", pady=5)
+        tk.Entry(lbl_frame, textvariable=self.end_page_var, width=10).grid(row=0, column=3, sticky="w", padx=10, pady=5)
+        
+        tk.Label(lbl_frame, text="최대 수집글 수:").grid(row=1, column=0, sticky="w", pady=5)
+        tk.Entry(lbl_frame, textvariable=self.max_posts_var, width=10).grid(row=1, column=1, sticky="w", padx=10, pady=5)
+        
+        tk.Checkbutton(lbl_frame, text="구글드라이브 업로드 생략, 기존 이미지 주소로 템플릿만 일괄 갱신", variable=self.force_template_var, fg="#1d4ed8", font=("Malgun Gothic", 9, "bold")).grid(row=1, column=2, columnspan=2, sticky="w", padx=10)
+        
+        tk.Label(lbl_frame, text="강제 재수집 번호:").grid(row=2, column=0, sticky="w", pady=5)
+        tk.Entry(lbl_frame, textvariable=self.force_nos_var, width=40).grid(row=2, column=1, columnspan=3, sticky="w", padx=10, pady=5)
+        tk.Label(lbl_frame, text="* 여러 개 일 때 반점(,)으로 구분", fg="gray50").grid(row=3, column=1, columnspan=3, sticky="w", padx=10)
+
+        sched_frame = tk.LabelFrame(self.root, text="📅 백그라운드 자동 가동 스케줄러", font=("Malgun Gothic", 10, "bold"), padx=15, pady=10)
+        sched_frame.pack(fill="x", padx=15, pady=10)
+        
+        tk.Label(sched_frame, text="가동 주기 선택:").pack(side="left", padx=5)
+        options = ["하루 1번 (정오)", "하루 2번 (12시간 간격)", "매 1시간마다 (24시간 상시 체크)"]
+        self.combo_sched = ttk.Combobox(sched_frame, textvariable=self.schedule_type_var, values=options, state="readonly", width=25)
+        self.combo_sched.pack(side="left", padx=10)
+        
+        btn_frame = tk.Frame(self.root)
+        btn_frame.pack(fill="x", padx=15, pady=5)
+        
+        self.btn_run = tk.Button(btn_frame, text="⚡ 아카이빙 즉시 시작", font=("Malgun Gothic", 10, "bold"), bg="#1d4ed8", fg="white", height=2, command=self.start_manual_thread)
+        self.btn_run.pack(side="left", fill="x", expand=True, padx=5)
+        
+        tk.Button(btn_frame, text="⏰ 자동 가동등록", font=("Malgun Gothic", 10, "bold"), bg="#10b981", fg="white", height=2, command=self.register_scheduler).pack(side="left", fill="x", expand=True, padx=5)
+        tk.Button(btn_frame, text="🛑 등록 해제", font=("Malgun Gothic", 10, "bold"), bg="#ef4444", fg="white", height=2, command=self.unregister_scheduler).pack(side="left", fill="x", expand=True, padx=5)
+
+        log_frame = tk.LabelFrame(self.root, text="📋 실시간 작업 로그", font=("Malgun Gothic", 10, "bold"), padx=5, pady=5)
+        log_frame.pack(fill="both", expand=True, padx=15, pady=10)
+        
+        self.log_text = tk.Text(log_frame, bg="#0f172a", fg="#f8fafc", font=("Consolas", 9), wrap="word")
+        self.log_text.pack(fill="both", expand=True, side="left")
+        
+        scroll = tk.Scrollbar(log_frame, command=self.log_text.yview)
+        scroll.pack(side="right", fill="y")
+        self.log_text.config(yscrollcommand=scroll.set)
+        
+        sys.stdout = TextRedirector(self.log_text)
+        sys.stderr = TextRedirector(self.log_text)
+        
+    def load_settings(self):
+        if os.path.exists(SETTINGS_FILE):
+            try:
+                with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    self.start_page_var.set(data.get("start_page", str(START_PAGE)))
+                    self.end_page_var.set(data.get("end_page", str(END_PAGE)))
+                    self.max_posts_var.set(data.get("max_posts", str(MAX_POSTS_TO_ARCHIVE)))
+                    self.force_nos_var.set(data.get("force_nos", ",".join(FORCE_REARCHIVE_POST_NOS)))
+                    self.schedule_type_var.set(data.get("schedule_type", "하루 2번"))
+                    self.force_template_var.set(data.get("force_template", False))
+            except Exception: pass
+            
+    def save_settings(self):
+        data = {
+            "start_page": self.start_page_var.get(),
+            "end_page": self.end_page_var.get(),
+            "max_posts": self.max_posts_var.get(),
+            "force_nos": self.force_nos_var.get(),
+            "schedule_type": self.schedule_type_var.get(),
+            "force_template": self.force_template_var.get()
+        }
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+    def start_manual_thread(self):
+        self.save_settings()
+        self.btn_run.config(state="disabled")
+        self.log_text.delete("1.0", tk.END)
+        
+        def run():
+            try:
+                run_archiver_logic(
+                    int(self.start_page_var.get()),
+                    int(self.end_page_var.get()),
+                    int(self.max_posts_var.get()),
+                    self.force_nos_var.get(),
+                    self.force_template_var.get()
+                )
+            except Exception as e:
+                print(f"❌ 작업 에러: {e}")
+            finally:
+                self.root.after(0, lambda: self.btn_run.config(state="normal"))
+                
+        t = threading.Thread(target=run)
+        t.daemon = True
+        t.start()
+
+    def get_current_exe_cmd(self):
+        if getattr(sys, 'frozen', False):
+            exe_path = sys.executable
+            return f'"{exe_path}" --cron'
+        else:
+            py_path = sys.executable
+            script_path = os.path.abspath(sys.argv[0])
+            return f'"{py_path}" "{script_path}" --cron'
+
+    def register_scheduler(self):
+        self.save_settings()
+        self.unregister_scheduler(silent=True)
+        
+        target_cmd = self.get_current_exe_cmd()
+        sched_type = self.schedule_type_var.get()
+        task_name = "MangaArchive_AutoTask"
+        
+        if "하루 1번" in sched_type:
+            cmd = f'schtasks /create /tn "{task_name}" /tr "{target_cmd}" /sc DAILY /st 12:00 /f'
+        elif "하루 2번" in sched_type:
+            cmd = f'schtasks /create /tn "{task_name}" /tr "{target_cmd}" /sc HOURLY /mo 12 /f'
+        else:
+            cmd = f'schtasks /create /tn "{task_name}" /tr "{target_cmd}" /sc HOURLY /mo 1 /f'
+            
+        try:
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            if result.returncode == 0:
+                messagebox.showinfo("등록 완료", f"윈도우 백그라운드 자동 등록이 완료되었습니다!\n주기: {sched_type}")
+            else:
+                messagebox.showerror("등록 실패", f"스케줄러 등록 실패: {result.stderr}")
+        except Exception as e:
+            messagebox.showerror("에러", f"명령 가동 실패: {e}")
+
+    def unregister_scheduler(self, silent=False):
+        task_name = "MangaArchive_AutoTask"
+        cmd = f'schtasks /delete /tn "{task_name}" /f'
+        try:
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            if not silent:
+                if result.returncode == 0:
+                    messagebox.showinfo("해제 완료", "자동화 등록이 정상적으로 해제되었습니다.")
+                else:
+                    messagebox.showinfo("확인", "현재 등록된 스케줄러 일정이 없습니다.")
+        except Exception as e:
+            if not silent: messagebox.showerror("에러", f"해제 실패: {e}")
+
+# ==========================================
+# [ 프로그램 무인/유인 분기 구동 진입점 ]
+# ==========================================
+if __name__ == "__main__":
+    if CLI_MODE or (len(sys.argv) > 1 and sys.argv[1] == "--cron"):
+        start_p = START_PAGE
+        end_p = END_PAGE
+        max_p = MAX_POSTS_TO_ARCHIVE
+        force_nos_str = ",".join(FORCE_REARCHIVE_POST_NOS)
+        force_tmpl = FORCE_TEMPLATE_REBUILD
+        
+        if not CLI_MODE and os.path.exists(SETTINGS_FILE):
+            try:
+                with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    start_p = int(data.get("start_page", str(START_PAGE)))
+                    end_p = int(data.get("end_page", str(END_PAGE)))
+                    max_p = int(data.get("max_posts", str(MAX_POSTS_TO_ARCHIVE)))
+                    force_nos_str = data.get("force_nos", ",".join(FORCE_REARCHIVE_POST_NOS))
+                    force_tmpl = data.get("force_template", False)
+            except Exception: pass
+            
+        run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_tmpl)
+        sys.exit(0)
+    else:
+        root = tk.Tk()
+        app = AppGUI(root)
+        
+        def on_closing():
+            release_lock()
+            root.destroy()
+            
+        root.protocol("WM_DELETE_WINDOW", on_closing)
+        root.mainloop()
