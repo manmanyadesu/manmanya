@@ -21,7 +21,9 @@
     </style>
 </head>
 <body>
+
 <a href="./index1.html" class="back-to-shelf-btn">◀ 책장으로</a>
+
 <div id="lock-screen">
     <div class="lock-container">
         <h2>🔒 비공개 아카이브 인증</h2>
@@ -32,25 +34,40 @@
         <div id="error-msg">비밀번호가 일치하지 않습니다.</div>
     </div>
 </div>
+
 <iframe id="viewer-frame"></iframe>
+
 <script>
     if (sessionStorage.getItem('archive_authenticated') === 'true') {
-        document.getElementById('lock-screen').style.display = 'none'; loadManga();
+        document.getElementById('lock-screen').style.display = 'none';
+        loadManga();
     }
+
     function verifyPassword() {
         const pw = document.getElementById('password').value;
         if (pw === '1111') {
             sessionStorage.setItem('archive_authenticated', 'true');
-            document.getElementById('lock-screen').style.display = 'none'; loadManga();
+            document.getElementById('lock-screen').style.display = 'none';
+            loadManga();
         } else {
             document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('password').value = ''; document.getElementById('password').focus();
+            document.getElementById('password').value = '';
+            document.getElementById('password').focus();
         }
     }
+
     function loadManga() {
-        const urlParams = new URLSearchParams(window.location.search); const postNo = urlParams.get('no');
-        if (!postNo) { alert("잘못된 접근입니다."); window.location.href = './index1.html'; return; }
-        const iframe = document.getElementById('viewer-frame'); iframe.style.display = 'block';
+        const urlParams = new URLSearchParams(window.location.search);
+        const postNo = urlParams.get('no');
+        
+        if (!postNo) {
+            alert("잘못된 접근입니다.");
+            window.location.href = './index1.html';
+            return;
+        }
+
+        const iframe = document.getElementById('viewer-frame');
+        iframe.style.display = 'block';
         iframe.src = `./archive/${postNo}/saved_post.html`;
     }
 </script>
