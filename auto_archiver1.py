@@ -8,7 +8,7 @@ MAX_POSTS_TO_ARCHIVE = 30               # 기본 최대 수집 수량 (0 이면 
 
 # 🚀 [템플릿 디자인 초고속 갱신용 토글]
 #  False /True로 설정 시 크롬창과 드라이브 API 호출 없이 로컬에서 단 1초 만에 모바일 반응형 템플릿으로 일괄 교체합니다.
-FORCE_TEMPLATE_REBUILD = False 
+FORCE_TEMPLATE_REBUILD = True
 
 # 강제 전체 재수집(초기화) 대상 글 번호 목록
 FORCE_REARCHIVE_POST_NOS = []
