@@ -87,18 +87,15 @@
         return result.toLowerCase();
     }
 
-    // 🛡️ [버그 패치 완료] 디시 특유의 오늘 날짜(14:20 등 시간 표기) 완벽 해석기 도입
     function parseDcDate(dateStr) {
         if (!dateStr) return new Date(0);
         dateStr = dateStr.trim();
-        // 시간만 표시되어 있는 경우 (예: "14:20") -> 오늘 날짜로 취급
         if (dateStr.includes(':') && !dateStr.includes('.') && !dateStr.includes('-')) {
             const now = new Date();
             const parts = dateStr.split(':');
             now.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
             return now;
         }
-        // 그 외 정상 날짜 표시 처리 (예: "2024.10.05")
         const parsed = new Date(dateStr.replace(/\./g, '/').replace(/-/g, '/'));
         return isNaN(parsed) ? new Date(0) : parsed;
     }
@@ -145,7 +142,6 @@
             items.sort((a, b) => {
                 const dateA = parseDcDate(a.date);
                 const dateB = parseDcDate(b.date);
-                // 날짜가 완전히 같을 경우 글 번호로 2차 정렬 (최신 번호가 위로)
                 if (dateB.getTime() === dateA.getTime()) {
                     return parseInt(b.post_no) - parseInt(a.post_no);
                 }
