@@ -444,6 +444,7 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
     img_session = requests.Session()
     img_headers = {"User-Agent": "Mozilla/5.0", "Referer": target_url}
 
+    # 💡 신규 BS4 버그 회피를 위해, 내부 모든 탐색 엔진을 vanilla 방식으로 교체했습니다.
     def parse_visible_comments(page_html):
         c_soup = BeautifulSoup(page_html, "html.parser")
         comment_items = c_soup.select("ul.cmt_list li")
@@ -453,15 +454,49 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
             if not c_id or not (c_id.startswith("comment_") or c_id.startswith("reply_")): continue
             if c_id in seen_comment_ids: continue
             seen_comment_ids.add(c_id)
+            
+            # vanilla parent ul search (re.compile 버그 방지)
             is_reply = False
-            if item.find_parent("ul", class_=re.compile("reply")) or c_id.startswith("reply_") or "reply" in "".join(item.get("class", []).lower()): is_reply = True
-            for nested_reply in item.find_all("ul", class_=re.compile("reply")): nested_reply.extract()
-            if "cmt_blank" in " ".join(item.get("class", [])).lower() or "삭제된" in item.text:
+            parent = item.parent
+            while parent and parent.name != "body":
+                if parent.name == "ul":
+                    p_classes = parent.get("class")
+                    if p_classes:
+                        if isinstance(p_classes, str): p_classes = [p_classes]
+                        if any("reply" in c.lower() for c in p_classes if isinstance(c, str)):
+                            is_reply = True
+                            break
+                parent = parent.parent
+                
+            if c_id.startswith("reply_"):
+                is_reply = True
+                
+            item_classes = item.get("class")
+            if item_classes:
+                if isinstance(item_classes, str): item_classes = [item_classes]
+                if any("reply" in c.lower() for c in item_classes if isinstance(c, str)):
+                    is_reply = True
+                    
+            # vanilla extract nested replies
+            for nested_reply in item.find_all("ul"):
+                nr_classes = nested_reply.get("class")
+                if nr_classes:
+                    if isinstance(nr_classes, str): nr_classes = [nr_classes]
+                    if any("reply" in c.lower() for c in nr_classes if isinstance(c, str)):
+                        nested_reply.extract()
+                        
+            is_deleted = "삭제된" in item.text
+            if item_classes:
+                if any("cmt_blank" in c.lower() for c in item_classes if isinstance(c, str)):
+                    is_deleted = True
+                    
+            if is_deleted:
                 collected_comments.append({
                     "writer": "", "text": "삭제된 댓글입니다.", "is_reply": is_reply, "dccon": "", "comment_img": "", "date": "",
                     "raw_dccon": "", "raw_cmt_img": ""
                 })
                 continue
+                
             writer = item.find("span", class_="nickname")
             ip_tag = item.find("span", class_="ip")
             full_writer = f"{writer.text.strip() if writer else 'ㅇㅇ'} {ip_tag.text.strip() if ip_tag else ''}".strip()
@@ -473,14 +508,24 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
             normalized_date = normalize_comment_date(date_text)
             
             raw_dccon_src = ""
-            dccon = item.find("img", class_=re.compile("dccon"))
-            if dccon: 
-                raw_dccon_src = dccon.get("data-src") or dccon.get("data-original") or dccon.get("org-src") or dccon.get("src") or ""
+            for img_el in item.find_all("img"):
+                img_classes = img_el.get("class")
+                if img_classes:
+                    if isinstance(img_classes, str): img_classes = [img_classes]
+                    if any("dccon" in c.lower() for c in img_classes if isinstance(c, str)):
+                        raw_dccon_src = img_el.get("data-src") or img_el.get("data-original") or img_el.get("org-src") or img_el.get("src") or ""
+                        break
 
             comment_img_src = ""
             for img_el in item.find_all("img"):
                 img_src = img_el.get("data-original") or img_el.get("data-src") or img_el.get("org-src") or img_el.get("src")
-                if img_src and "dccon" not in img_src and "option_icon" not in img_src:
+                img_classes = img_el.get("class")
+                is_dccon_img = False
+                if img_classes:
+                    if isinstance(img_classes, str): img_classes = [img_classes]
+                    if any("dccon" in c.lower() for c in img_classes if isinstance(c, str)):
+                        is_dccon_img = True
+                if img_src and not is_dccon_img and "option_icon" not in img_src:
                     comment_img_src = img_src
                     break
                     
@@ -659,18 +704,16 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                 
                 soup = BeautifulSoup(list_page.content(), "html.parser")
                 for row in soup.select("tr.us-post:not(.notice)"):
-                    # 💡 스캔 검사 제한조건 확인
                     if max_p and archive_count >= max_p: break
                         
                     no_el = row.select_one(".gall_num")
                     if not no_el or not no_el.text.strip().isdigit(): continue
                     post_no = no_el.text.strip()
                     
-                    # 💡 방안 A 핵심: 목록에 존재하는 유효 글 번호를 마주할 때마다 검사 카운트 1씩 증가
                     archive_count += 1
                     
                     if post_no in force_nos:
-                        archive_count -= 1 # 대기열 우선 수집 대상 글은 카운트에서 제합니다.
+                        archive_count -= 1
                         continue
                     
                     reply_el = row.select_one(".reply_num")
