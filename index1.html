@@ -64,6 +64,7 @@
             <div class="tabs">
                 <button class="tab-btn active" id="btn-latest" onclick="setSort('latest')">최신순</button>
                 <button class="tab-btn" id="btn-recom" onclick="setSort('recom')">추천순</button>
+                <!-- 💡 추가된 정렬 버튼 -->
                 <button class="tab-btn" id="btn-cmt" onclick="setSort('cmt')">댓글순</button>
                 <button class="tab-btn" id="btn-view" onclick="setSort('view')">조회순</button>
             </div>
@@ -93,7 +94,7 @@
 
     function parseDcDate(dateStr) {
         if (!dateStr) return new Date(0);
-        dateStr = dateStr.strip();
+        dateStr = dateStr.trim();
         if (dateStr.includes(':') && !dateStr.includes('.') && !dateStr.includes('-')) {
             const now = new Date();
             const parts = dateStr.split(':');
@@ -107,8 +108,7 @@
     async function loadArchive() {
         const bookshelf = document.getElementById('bookshelf');
         try {
-            // 💡 [캐시 버스팅 이식] completed_posts.json의 브라우저 HTTP 디스크 캐시를 강제로 비활성화합니다.
-            const response = await fetch('./archive/completed_posts.json?v=' + Date.now());
+            const response = await fetch('./archive/completed_posts.json');
             if (!response.ok) throw new Error("데이터 로딩 실패");
             archiveData = await response.json();
             renderBookshelf();
@@ -132,6 +132,7 @@
         }
         
         const now = new Date();
+        // 💡 최신순이 아닌 모든 정렬(추천/댓글/조회순)에서 기간 필터 작동
         if (currentSort !== 'latest' && currentSubFilter !== 'all') {
             items = items.filter(item => {
                 const postDate = parseDcDate(item.date);
@@ -143,6 +144,7 @@
             });
         }
         
+        // 💡 추가된 4가지 정렬 로직 분기
         if (currentSort === 'latest') {
             items.sort((a, b) => {
                 const dateA = parseDcDate(a.date);
@@ -195,10 +197,13 @@
         }
     }
     
+    // 💡 동적 탭 스위칭 컨트롤 함수
     function setSort(type) {
         currentSort = type; currentShelfPage = 1; 
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('btn-' + type).classList.add('active');
+        
+        // 서브 탭(주/월/연간)은 최신순일 때만 숨기고, 추천/댓글/조회순일 때는 나타남
         document.getElementById('sub-tabs-area').classList.toggle('active', type !== 'latest');
         renderBookshelf();
     }
