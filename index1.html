@@ -14,7 +14,7 @@
         .search-bar { width: 100%; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-color); font-size: 15px; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
         .search-bar:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25); }
         .tabs-container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .tabs { display: flex; gap: 10px; }
+        .tabs { display: flex; gap: 10px; flex-wrap: wrap; }
         .tab-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .tab-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
         .sub-tabs { display: none; gap: 6px; }
@@ -28,11 +28,13 @@
         .thumbnail-box img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         .book-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
         .book-title { font-size: 14px; font-weight: bold; line-height: 1.5; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 12px; word-break: break-all; color: var(--text-color); }
-        .book-meta { display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-top: auto; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px; }
+        .book-meta { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: bold; margin-top: auto; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px; }
+        .meta-row { display: flex; justify-content: space-between; }
         .meta-recom { color: var(--accent-color); }
         .meta-cmt { color: var(--primary-color); }
+        .meta-view { color: var(--text-sub); font-size: 11px; }
         .book-date { font-size: 11px; color: var(--text-sub); margin-top: 8px; }
-        .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 50px; margin-bottom: 30px; }
+        .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 50px; margin-bottom: 30px; flex-wrap: wrap; }
         .page-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .page-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
         @media (max-width: 600px) { 
@@ -42,7 +44,7 @@
             .bookshelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } 
             .book-info { padding: 12px; }
             .book-title { font-size: 13px; margin-bottom: 8px; height: 38px; line-height: 1.4; }
-            .book-meta { flex-direction: column; gap: 4px; font-size: 11px; }
+            .book-meta { gap: 4px; font-size: 11px; }
             .controls { margin-bottom: 20px; }
             .search-bar { font-size: 14px; padding: 12px; }
             .tabs-container { justify-content: center; }
@@ -62,6 +64,9 @@
             <div class="tabs">
                 <button class="tab-btn active" id="btn-latest" onclick="setSort('latest')">최신순</button>
                 <button class="tab-btn" id="btn-recom" onclick="setSort('recom')">추천순</button>
+                <!-- 💡 추가된 정렬 버튼 -->
+                <button class="tab-btn" id="btn-cmt" onclick="setSort('cmt')">댓글순</button>
+                <button class="tab-btn" id="btn-view" onclick="setSort('view')">조회순</button>
             </div>
             <div class="sub-tabs" id="sub-tabs-area">
                 <button class="sub-btn active" id="sub-all" onclick="setSubFilter('all')">역대</button>
@@ -127,7 +132,8 @@
         }
         
         const now = new Date();
-        if (currentSort === 'recom' && currentSubFilter !== 'all') {
+        // 💡 최신순이 아닌 모든 정렬(추천/댓글/조회순)에서 기간 필터 작동
+        if (currentSort !== 'latest' && currentSubFilter !== 'all') {
             items = items.filter(item => {
                 const postDate = parseDcDate(item.date);
                 const diffTime = Math.abs(now - postDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -138,6 +144,7 @@
             });
         }
         
+        // 💡 추가된 4가지 정렬 로직 분기
         if (currentSort === 'latest') {
             items.sort((a, b) => {
                 const dateA = parseDcDate(a.date);
@@ -147,7 +154,10 @@
                 }
                 return dateB - dateA;
             });
-        } else if (currentSort === 'recom') { items.sort((a, b) => (b.recommend || 0) - (a.recommend || 0)); }
+        } 
+        else if (currentSort === 'recom') { items.sort((a, b) => (b.recommend || 0) - (a.recommend || 0)); }
+        else if (currentSort === 'cmt') { items.sort((a, b) => (b.comment_count || 0) - (a.comment_count || 0)); }
+        else if (currentSort === 'view') { items.sort((a, b) => (b.views || 0) - (a.views || 0)); }
         
         const totalItems = items.length; const totalPages = Math.ceil(totalItems / itemsPerPage);
         if (currentShelfPage > totalPages) currentShelfPage = totalPages;
@@ -164,8 +174,11 @@
                 <div class="book-info">
                     <div class="book-title">${item.title}</div>
                     <div class="book-meta">
-                        <span class="meta-recom">★ 추천 ${item.recommend || 0}</span>
-                        <span class="meta-cmt">💬 댓글 ${item.comment_count || 0}</span>
+                        <div class="meta-row">
+                            <span class="meta-recom">★ 추천 ${item.recommend || 0}</span>
+                            <span class="meta-cmt">💬 댓글 ${item.comment_count || 0}</span>
+                        </div>
+                        <div class="meta-view">👁️ 조회수 ${item.views ? item.views.toLocaleString() : 0}</div>
                     </div>
                     <div class="book-date">${item.date ? item.date.split(' ')[0] : '날짜 없음'}</div>
                 </div>
@@ -184,11 +197,14 @@
         }
     }
     
+    // 💡 동적 탭 스위칭 컨트롤 함수
     function setSort(type) {
         currentSort = type; currentShelfPage = 1; 
-        document.getElementById('btn-latest').classList.toggle('active', type === 'latest');
-        document.getElementById('btn-recom').classList.toggle('active', type === 'recom');
-        document.getElementById('sub-tabs-area').classList.toggle('active', type === 'recom');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('btn-' + type).classList.add('active');
+        
+        // 서브 탭(주/월/연간)은 최신순일 때만 숨기고, 추천/댓글/조회순일 때는 나타남
+        document.getElementById('sub-tabs-area').classList.toggle('active', type !== 'latest');
         renderBookshelf();
     }
     
