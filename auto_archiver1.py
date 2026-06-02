@@ -3,8 +3,8 @@
 # ==============================================================================
 GALLERY_ID = "comic_new6"               # 디시인사이드 갤러리 ID
 START_PAGE = 1                          # 기본 시작 페이지
-END_PAGE = 1                            # 기본 종료 페이지
-MAX_POSTS_TO_ARCHIVE = 10               # 기본 최대 수집 수량 (0 이면 제한 없음)
+END_PAGE = 3                            # 기본 종료 페이지
+MAX_POSTS_TO_ARCHIVE = 0               # 기본 최대 수집 수량 (0 이면 제한 없음)
 
 # 🚀 [템플릿 디자인 초고속 갱신용 토글]
 #  False /True로 설정 시 크롬창과 드라이브 API 호출 없이 로컬에서 단 1초 만에 모바일 반응형 템플릿으로 일괄 교체합니다.
@@ -662,7 +662,10 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
                 raw_text = poll_wrap_live.inner_text()
                 lines = [line.strip() for line in raw_text.split('\n') if line.strip()]
                 poll_text_content = "<br>".join(lines)
-                poll_text_html = f"<div class='poll-text-result' style='margin-top:15px; padding:15px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; font-weight:bold; color:#334155; line-height:1.6;'>💡 텍스트 투표 현황 (실시간 갱신됨)<br><br>{poll_text_content}</div>"
+                
+                # 💡 실시간 갱신 시스템 시각 매핑 (지연시간 0초)
+                now_str = datetime.datetime.now().strftime("%Y.%m.%d %H:%M:%S")
+                poll_text_html = f"<div class='poll-text-result' style='margin-top:15px; padding:15px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; font-weight:bold; color:#334155; line-height:1.6;'>💡 텍스트 투표 현황 ({now_str} 갱신)<br><br>{poll_text_content}</div>"
             except Exception:
                 pass
 
@@ -687,7 +690,8 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
         "recommend": recommend_val,
         "comment_count": len(collected_comments),
         "image_count": image_count,
-        "thumbnail": thumbnail_url
+        "thumbnail": thumbnail_url,
+        "has_poll": bool(poll_drive_url or has_poll or poll_text_html) # 💡 꼬리표 추가
     }
     if not update_comments_only:
         shutil.rmtree(img_dir, ignore_errors=True)
@@ -786,13 +790,17 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                         success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, folder_id, update_comments_only=True)
                         if success: 
                             completed_posts[post_no]["comment_count"] = current_cmt_count
-                            print(f"   └─ [{post_no}번] 댓글 동기화 완료! (수집된 이미지: {post_meta['image_count']}개, 총 댓글: {post_meta['comment_count']}개) [인스펙션 누적: {archive_count}/{max_p}]")
+                            completed_posts[post_no]["views"] = post_meta["views"]       # 💡 이 줄 추가
+                            completed_posts[post_no]["recommend"] = post_meta["recommend"] # 💡 이 줄 추가
+                            poll_msg = " 투표 동기화 완료!" if post_meta.get("has_poll") else ""
+                            print(f"   └─ [{post_no}번] 댓글 동기화 완료!{poll_msg} (수집된 이미지: {post_meta['image_count']}개, 총 댓글: {post_meta['comment_count']}개) [인스펙션 누적: {archive_count}/{max_p}]")
                     else:
                         print(f"\n▶ [{post_no}번] 신규 글 발견! 전체 수집 시작...")
                         success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, folder_id, update_comments_only=False)
                         if success:
                             completed_posts[post_no] = {"comment_count": current_cmt_count, **post_meta}
-                            print(f"   └─ [{post_no}번] 수집 성공! (수집된 이미지: {post_meta['image_count']}개, 총 댓글: {post_meta['comment_count']}개) [인스펙션 누적: {archive_count}/{max_p}]")
+                            poll_msg = " 투표 수집 완료!" if post_meta.get("has_poll") else ""
+                            print(f"   └─ [{post_no}번] 수집 성공!{poll_msg} (수집된 이미지: {post_meta['image_count']}개, 총 댓글: {post_meta['comment_count']}개) [인스펙션 누적: {archive_count}/{max_p}]")
 
                     if success:
                         save_checkpoint(completed_posts)
