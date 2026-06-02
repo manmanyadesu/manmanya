@@ -6,6 +6,7 @@
 !/auto_archiver1.py
 !/index1.html
 !/reader1.html
+!lockonarchiver.py
 
 # 3. 아카이브 폴더 및 하위 파일들도 무시하지 않고 예외 처리함
 !/archive/
