@@ -290,9 +290,9 @@ def merge_comments_preserving_existing(old_comments, new_comments):
 
     return merged_comments
 
-def saved_post_has_comment_ids(post_no):
+def saved_post_has_comment_relations(post_no):
     """
-    기존 저장본의 댓글에 comment_id가 이미 들어 있는지 확인합니다.
+    기존 저장본의 답글에 부모 댓글 ID가 정상적으로 들어 있는지 확인합니다.
     댓글이 없는 글은 다시 수집할 필요가 없으므로 완료된 것으로 판단합니다.
     """
     html_path = f"{BASE_DIR}/{post_no}/saved_post.html"
@@ -306,9 +306,17 @@ def saved_post_has_comment_ids(post_no):
         if not match:
             return False
         comments = json.loads(match.group(1))
-        # 삭제되어 원문에서 사라진 옛 댓글은 ID를 복원할 수 있으므로,
-        # 현재 확인 가능한 댓글에 ID가 하나라도 채워졌으면 전환 완료로 봅니다.
-        return not comments or any(str(comment.get("comment_id", "")).strip() for comment in comments)
+        if not comments:
+            return True
+        comments_with_id = [
+            comment for comment in comments
+            if str(comment.get("comment_id", "")).strip()
+        ]
+        return bool(comments_with_id) and all(
+            not comment.get("is_reply")
+            or str(comment.get("parent_comment_id", "")).strip()
+            for comment in comments_with_id
+        )
     except Exception:
         return False
 
@@ -634,9 +642,16 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
 
             parent_comment_id = ""
             if is_reply:
-                parent_comment = item.find_parent("li", id=re.compile(r"^comment_"))
-                if parent_comment:
-                    parent_comment_id = parent_comment.get("id", "")
+                # 디시 답글의 실제 부모 번호는 상위 reply_list의 p-no에 들어 있습니다.
+                # 예: <ul id="reply_list_5544470" p-no="5544470"> → comment_li_5544470
+                reply_list = item.find_parent("ul", class_=lambda value: value and "reply_list" in value)
+                if reply_list:
+                    parent_no = str(
+                        reply_list.get("p-no")
+                        or reply_list.get("id", "").replace("reply_list_", "")
+                    ).strip()
+                    if parent_no:
+                        parent_comment_id = f"comment_li_{parent_no}"
                     
             # vanilla extract nested replies
             for nested_reply in item.find_all("ul"):
@@ -837,6 +852,14 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
         if "raw_dccon" in c: del c["raw_dccon"]
         if "raw_cmt_img" in c: del c["raw_cmt_img"]
 
+    comment_relation_ready = all(
+        not comment.get("is_reply")
+        or bool(str(comment.get("parent_comment_id", "")).strip())
+        for comment in collected_comments
+    )
+    if not comment_relation_ready:
+        print("      ⚠️ 부모 ID를 확인하지 못한 답글이 있어 관계 갱신을 완료 처리하지 않습니다.")
+
     if update_comments_only and old_comments:
         newly_collected_count = len(collected_comments)
         collected_comments = merge_comments_preserving_existing(old_comments, collected_comments)
@@ -893,6 +916,7 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
         "comment_count": len(collected_comments),
         "live_comment_count": live_comment_count,
         "comment_id_version": 1,
+        "comment_relation_version": 2 if comment_relation_ready else 0,
         "image_count": image_count,
         "thumbnail": thumbnail_url,
         "has_poll": bool(poll_drive_url or has_poll or poll_text_html) # 💡 꼬리표 추가
@@ -991,11 +1015,11 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                             "live_comment_count",
                             completed_posts[post_no].get("comment_count", 0)
                         )
-                        has_comment_ids = (
-                            completed_posts[post_no].get("comment_id_version") == 1
-                            or saved_post_has_comment_ids(post_no)
+                        has_comment_relations = (
+                            completed_posts[post_no].get("comment_relation_version") == 2
+                            or saved_post_has_comment_relations(post_no)
                         )
-                        if current_cmt_count == saved_cmt_count and has_comment_ids:
+                        if current_cmt_count == saved_cmt_count and has_comment_relations:
                             print(f"   └─ [{post_no}번] 이미 수집됨 (댓글 변동 없음: {current_cmt_count}개) [인스펙션 누적: {archive_count}/{max_p}]")
                             continue
 
@@ -1009,6 +1033,7 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                             completed_posts[post_no]["comment_count"] = post_meta["comment_count"]
                             completed_posts[post_no]["live_comment_count"] = current_cmt_count
                             completed_posts[post_no]["comment_id_version"] = 1
+                            completed_posts[post_no]["comment_relation_version"] = post_meta["comment_relation_version"]
                             completed_posts[post_no]["views"] = post_meta["views"]       # 💡 이 줄 추가
                             completed_posts[post_no]["recommend"] = post_meta["recommend"] # 💡 이 줄 추가
                             poll_msg = " 투표 동기화 완료!" if post_meta.get("has_poll") else ""

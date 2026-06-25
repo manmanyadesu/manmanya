@@ -11,8 +11,8 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 🎯 수집하고 싶은 디시인사이드 글 번호 또는 주소 링크를 여기에 "줄바꿈(Enter)"으로 붙여넣어 주세요!
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
-
 https://gall.dcinside.com/board/view/?id=comic_new3&no=1776473
+
 
 """
 
@@ -310,6 +310,45 @@ def merge_comments_preserving_existing(old_comments, new_comments):
 
     return merged_comments
 
+def saved_post_has_comment_relations(archive_key):
+    """
+    기존 저장본의 답글에 부모 댓글 ID가 정상적으로 들어 있는지 확인합니다.
+    댓글이 없는 글은 다시 수집할 필요가 없으므로 완료된 것으로 판단합니다.
+    """
+    html_path = f"{BASE_DIR}/{archive_key}/saved_post.html"
+    if not os.path.exists(html_path):
+        return False
+
+    try:
+        with open(html_path, "r", encoding="utf-8") as f:
+            html_text = f.read()
+        match = re.search(r"const rawComments = (\[.*?\]);", html_text, re.DOTALL)
+        if not match:
+            return False
+        comments = json.loads(match.group(1))
+        if not comments:
+            return True
+        comments_with_id = [
+            comment for comment in comments
+            if str(comment.get("comment_id", "")).strip()
+        ]
+        return bool(comments_with_id) and all(
+            not comment.get("is_reply")
+            or str(comment.get("parent_comment_id", "")).strip()
+            for comment in comments_with_id
+        )
+    except Exception:
+        return False
+
+def apply_comment_parent_grouping(html_text):
+    """
+    comment_id가 있는 새 자료는 parent_comment_id로 부모·답글을 묶고,
+    ID가 없는 기존 자료는 예전의 저장 순서 방식으로 그대로 표시합니다.
+    """
+    old_script = """let currentSort = 'old', commentsPerPage = 50, currentPage = 1, commentGroups = [], currentGroup = null; rawComments.forEach(c => { if (!c.is_reply) { currentGroup = { parent: c, replies: [] }; commentGroups.push(currentGroup); } else { if (currentGroup) currentGroup.replies.push(c); else { currentGroup = { parent: null, replies: [c] }; commentGroups.push(currentGroup); } } }); function buildWriterHTML"""
+    new_script = """let currentSort = 'old', commentsPerPage = 50, currentPage = 1, commentGroups = [], currentGroup = null, parentGroupsById = new Map(), pendingRepliesByParent = new Map(); rawComments.forEach(c => { if (!c.is_reply) { currentGroup = { parent: c, replies: [] }; commentGroups.push(currentGroup); const commentId = String(c.comment_id || '').trim(); if (commentId) { parentGroupsById.set(commentId, currentGroup); const pendingReplies = pendingRepliesByParent.get(commentId); if (pendingReplies) { currentGroup.replies.push(...pendingReplies); pendingRepliesByParent.delete(commentId); } } } else { const parentId = String(c.parent_comment_id || '').trim(); if (parentId) { const parentGroup = parentGroupsById.get(parentId); if (parentGroup) parentGroup.replies.push(c); else { if (!pendingRepliesByParent.has(parentId)) pendingRepliesByParent.set(parentId, []); pendingRepliesByParent.get(parentId).push(c); } } else if (currentGroup) currentGroup.replies.push(c); else { currentGroup = { parent: null, replies: [c] }; commentGroups.push(currentGroup); } } }); pendingRepliesByParent.forEach(replies => commentGroups.push({ parent: null, replies })); function buildWriterHTML"""
+    return html_text.replace(old_script, new_script)
+
 # 🆕 갤러리별 글 번호 충돌을 막는 아카이브 고유 키 생성 함수
 # 기존 만갤6은 예전 자료와 호환되도록 "1742096" 형태를 유지하고,
 # 그 외 갤러리는 "comic_new3_1742096" 형태로 저장합니다.
@@ -445,6 +484,7 @@ def rebuild_html_locally(post_no, target_gallery=DEFAULT_GALLERY_ID):
             }}
         }} }} function changeSort(type) {{ currentSort = type; document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active')); document.getElementById('sort-' + type).classList.add('active'); currentPage = 1; renderComments(); }} function changeLimit(val) {{ commentsPerPage = parseInt(val); currentPage = 1; renderComments(); }} document.querySelectorAll('a[href^="#"]').forEach(anchor => {{ anchor.addEventListener('click', function (e) {{ e.preventDefault(); document.querySelector(this.getAttribute('href')).scrollIntoView({{ behavior: 'smooth' }}); }}); }}); renderComments();</script></body></html>"""
 
+        html_template = apply_comment_parent_grouping(html_template)
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html_template)
         return True
@@ -676,9 +716,16 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
 
             parent_comment_id = ""
             if is_reply:
-                parent_comment = item.find_parent("li", id=re.compile(r"^comment_"))
-                if parent_comment:
-                    parent_comment_id = parent_comment.get("id", "")
+                # 디시 답글의 실제 부모 번호는 상위 reply_list의 p-no에 들어 있습니다.
+                # 예: <ul id="reply_list_5544470" p-no="5544470"> → comment_li_5544470
+                reply_list = item.find_parent("ul", class_=lambda value: value and "reply_list" in value)
+                if reply_list:
+                    parent_no = str(
+                        reply_list.get("p-no")
+                        or reply_list.get("id", "").replace("reply_list_", "")
+                    ).strip()
+                    if parent_no:
+                        parent_comment_id = f"comment_li_{parent_no}"
                     
             for nested_reply in item.find_all("ul"):
                 nr_classes = nested_reply.get("class")
@@ -878,6 +925,14 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
         if "raw_dccon" in c: del c["raw_dccon"]
         if "raw_cmt_img" in c: del c["raw_cmt_img"]
 
+    comment_relation_ready = all(
+        not comment.get("is_reply")
+        or bool(str(comment.get("parent_comment_id", "")).strip())
+        for comment in collected_comments
+    )
+    if not comment_relation_ready:
+        print("      ⚠️ 부모 ID를 확인하지 못한 답글이 있어 관계 갱신을 완료 처리하지 않습니다.")
+
     if update_comments_only and old_comments:
         newly_collected_count = len(collected_comments)
         collected_comments = merge_comments_preserving_existing(old_comments, collected_comments)
@@ -924,6 +979,7 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
         comment_count_top, content_area_html, poll_section_html, upvotes, downvotes, comments_json_str
     )
 
+    html_template = apply_comment_parent_grouping(html_template)
     with open(html_path, "w", encoding="utf-8") as f: f.write(html_template)
     
     live_comment_count = int(re.search(r"\d+", comment_count_top).group()) if re.search(r"\d+", comment_count_top) else len(collected_comments)
@@ -939,6 +995,8 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
         "recommend": recommend_val,
         "comment_count": len(collected_comments),
         "live_comment_count": live_comment_count,
+        "comment_id_version": 1,
+        "comment_relation_version": 2 if comment_relation_ready else 0,
         "image_count": image_count,
         "thumbnail": thumbnail_url,
         "has_poll": bool(poll_drive_url or has_poll or poll_text_html) # 💡 꼬리표 추가
@@ -1051,17 +1109,25 @@ def run_direct_archiver():
                     print(f"      ⚠️ 원문 댓글 수 확인 실패로 안전하게 전체 동기화를 진행합니다: {e}")
                     current_cmt_count = None
 
-                if current_cmt_count is not None and current_cmt_count == saved_cmt_count:
+                has_comment_relations = (
+                    completed_posts[archive_key].get("comment_relation_version") == 2
+                    or saved_post_has_comment_relations(archive_key)
+                )
+                if current_cmt_count is not None and current_cmt_count == saved_cmt_count and has_comment_relations:
                     print(f"   └─ [{post_no}번] 댓글 변동 없음 ({current_cmt_count}개). 재수집을 생략합니다.")
                     continue
 
-                if current_cmt_count is not None:
+                if current_cmt_count is not None and current_cmt_count == saved_cmt_count:
+                    print(f"   └─ 기존 댓글 ID가 없어 최초 1회 답글 관계를 갱신합니다.")
+                elif current_cmt_count is not None:
                     print(f"   └─ 댓글 수 변동 감지 (기존 원문 {saved_cmt_count}개 -> 현재 원문 {current_cmt_count}개)")
 
                 success, post_meta = archive_single_post(post_no, target_gall, post_page, drive_service, creds, folder_id, update_comments_only=True)
                 if success:
                     completed_posts[archive_key]["comment_count"] = post_meta["comment_count"]
                     completed_posts[archive_key]["live_comment_count"] = post_meta["live_comment_count"]
+                    completed_posts[archive_key]["comment_id_version"] = 1
+                    completed_posts[archive_key]["comment_relation_version"] = post_meta["comment_relation_version"]
                     completed_posts[archive_key]["views"] = post_meta["views"]       # 💡 이 줄 추가
                     completed_posts[archive_key]["recommend"] = post_meta["recommend"] # 💡 이 줄 추가
                     completed_posts[archive_key]["gallery_id"] = target_gall

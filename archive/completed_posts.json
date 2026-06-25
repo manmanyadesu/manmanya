@@ -7804,12 +7804,14 @@
         "archive_key": "comic_new3_1776473",
         "title": "번역) 회사 동료가 뽕 중독이었던 이야기 (고향최고! 작가 만화)",
         "date": "2022.01.22 18:11:12",
-        "views": 97937,
+        "views": 97951,
         "recommend": 382,
         "image_count": 8,
         "thumbnail": "https://lh3.googleusercontent.com/d/16erdmhh5fWgEbx7KuwBKsSDJlLnbKYId",
         "has_poll": false,
-        "live_comment_count": 149
+        "live_comment_count": 149,
+        "comment_id_version": 1,
+        "comment_relation_version": 2
     },
     "comic_new3_5970308": {
         "comment_count": 160,
