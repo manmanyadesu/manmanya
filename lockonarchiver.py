@@ -11,9 +11,8 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 🎯 수집하고 싶은 디시인사이드 글 번호 또는 주소 링크를 여기에 "줄바꿈(Enter)"으로 붙여넣어 주세요!
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
-https://gall.dcinside.com/board/view/?id=comic_new3&no=5970308
 
-
+https://gall.dcinside.com/board/view/?id=comic_new3&no=1771367
 
 """
 
@@ -208,6 +207,108 @@ def normalize_comment_date(date_str):
         return f"{now.month:02d}.{now.day:02d} {match_time.group(1)}:{match_time.group(2)}"
         
     return date_str
+
+def make_comment_fallback_key(comment):
+    """댓글 ID가 없는 기존 자료를 수량 단위로 대응하기 위한 보조 키입니다."""
+    return (
+        str(comment.get("writer", "")).strip(),
+        str(comment.get("text", "")).strip(),
+        normalize_comment_date(comment.get("date", "")),
+        bool(comment.get("is_reply", False))
+    )
+
+def merge_comments_preserving_existing(old_comments, new_comments):
+    """
+    기존 댓글은 삭제하지 않고 새 댓글만 추가합니다.
+    comment_id를 우선 사용하고, ID가 없는 기존 자료는 동일 보조 키의
+    댓글 수량을 하나씩 대응하여 도배 댓글이 두 배가 되는 것을 막습니다.
+    """
+    merged_comments = [dict(comment) for comment in old_comments]
+    old_id_to_index = {}
+    old_idless_indexes = {}
+
+    for index, comment in enumerate(merged_comments):
+        comment_id = str(comment.get("comment_id", "")).strip()
+        if comment_id:
+            old_id_to_index[comment_id] = index
+        else:
+            key = make_comment_fallback_key(comment)
+            old_idless_indexes.setdefault(key, []).append(index)
+
+    old_idless_positions = {key: 0 for key in old_idless_indexes}
+    additions = []
+
+    for new_comment in new_comments:
+        new_comment = dict(new_comment)
+        comment_id = str(new_comment.get("comment_id", "")).strip()
+        matched_index = old_id_to_index.get(comment_id) if comment_id else None
+
+        if matched_index is None:
+            key = make_comment_fallback_key(new_comment)
+            candidates = old_idless_indexes.get(key, [])
+            position = old_idless_positions.get(key, 0)
+            if position < len(candidates):
+                matched_index = candidates[position]
+                old_idless_positions[key] = position + 1
+
+        if matched_index is None:
+            additions.append(new_comment)
+            continue
+
+        old_comment = merged_comments[matched_index]
+        preserved_dccon = old_comment.get("dccon", "")
+        preserved_comment_img = old_comment.get("comment_img", "")
+        old_comment.update(new_comment)
+        if not old_comment.get("dccon"):
+            old_comment["dccon"] = preserved_dccon
+        if not old_comment.get("comment_img"):
+            old_comment["comment_img"] = preserved_comment_img
+        if comment_id:
+            old_id_to_index[comment_id] = matched_index
+
+    additions_by_parent = {}
+    standalone_additions = []
+    new_parent_ids = set()
+
+    for comment in additions:
+        if not comment.get("is_reply"):
+            comment_id = str(comment.get("comment_id", "")).strip()
+            if comment_id:
+                new_parent_ids.add(comment_id)
+
+    for comment in additions:
+        parent_comment_id = str(comment.get("parent_comment_id", "")).strip()
+        if comment.get("is_reply") and parent_comment_id:
+            additions_by_parent.setdefault(parent_comment_id, []).append(comment)
+        else:
+            standalone_additions.append(comment)
+
+    existing_parent_insertions = []
+    for parent_comment_id, replies in additions_by_parent.items():
+        if parent_comment_id in old_id_to_index and parent_comment_id not in new_parent_ids:
+            existing_parent_insertions.append((old_id_to_index[parent_comment_id], replies))
+
+    for parent_index, replies in sorted(existing_parent_insertions, reverse=True):
+        insert_index = parent_index + 1
+        while insert_index < len(merged_comments) and merged_comments[insert_index].get("is_reply"):
+            insert_index += 1
+        merged_comments[insert_index:insert_index] = replies
+
+    for comment in standalone_additions:
+        merged_comments.append(comment)
+        comment_id = str(comment.get("comment_id", "")).strip()
+        if not comment.get("is_reply") and comment_id:
+            merged_comments.extend(additions_by_parent.get(comment_id, []))
+
+    handled_parent_ids = {
+        parent_id for parent_id in additions_by_parent
+        if parent_id in old_id_to_index or parent_id in new_parent_ids
+    }
+    for parent_comment_id, replies in additions_by_parent.items():
+        if parent_comment_id not in handled_parent_ids:
+            merged_comments.extend(replies)
+
+    return merged_comments
 
 # 🆕 갤러리별 글 번호 충돌을 막는 아카이브 고유 키 생성 함수
 # 기존 만갤6은 예전 자료와 호환되도록 "1742096" 형태를 유지하고,
@@ -405,6 +506,7 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
     downvotes = down_el.text.strip() if down_el else "0"
 
     existing_comments_cache = {}
+    old_comments = []
     if update_comments_only and os.path.exists(html_path):
         print(f"🔄 [{post_no}번 글] 기존 이미지 주소 보존 및 초고속 댓글 동기화 중...")
         try:
@@ -439,8 +541,7 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
                         try:
                             old_comments = json.loads(match.group(1))
                             for oc in old_comments:
-                                norm_date = normalize_comment_date(oc.get('date', ''))
-                                key = f"{oc.get('writer', '')}|{oc.get('text', '')}|{norm_date}"
+                                key = make_comment_fallback_key(oc)
                                 existing_comments_cache[key] = {
                                     "dccon": oc.get("dccon", ""),
                                     "comment_img": oc.get("comment_img", "")
@@ -572,6 +673,12 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
                 if isinstance(item_classes, str): item_classes = [item_classes]
                 if any("reply" in c.lower() for c in item_classes if isinstance(c, str)):
                     is_reply = True
+
+            parent_comment_id = ""
+            if is_reply:
+                parent_comment = item.find_parent("li", id=re.compile(r"^comment_"))
+                if parent_comment:
+                    parent_comment_id = parent_comment.get("id", "")
                     
             for nested_reply in item.find_all("ul"):
                 nr_classes = nested_reply.get("class")
@@ -588,6 +695,7 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
             if is_deleted:
                 collected_comments.append({
                     "writer": "", "text": "삭제된 댓글입니다.", "is_reply": is_reply, "dccon": "", "comment_img": "", "date": "",
+                    "comment_id": c_id, "parent_comment_id": parent_comment_id,
                     "raw_dccon": "", "raw_cmt_img": ""
                 })
                 continue
@@ -626,15 +734,34 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
                     
             collected_comments.append({
                 "writer": full_writer, "text": txt, "is_reply": is_reply, "dccon": "", "comment_img": "", "date": normalized_date,
+                "comment_id": c_id, "parent_comment_id": parent_comment_id,
                 "raw_dccon": raw_dccon_src, "raw_cmt_img": comment_img_src
             })
 
+    # 💡 숫자 페이지 버튼뿐 아니라 30페이지 이후의 '다음 페이지 묶음' 버튼도 따라갑니다.
+    # 같은 댓글 페이지가 반복되면 즉시 중단하여 잘못된 버튼 선택으로 인한 무한 루프를 방지합니다.
+    visited_comment_pages = set()
+
     while True:
-        parse_visible_comments(page.content())
+        page_html = page.content()
+        comment_page_ids = tuple(re.findall(r'id=["\'](?:comment|reply)_([^"\']+)', page_html))
+        page_signature = comment_page_ids[:5]
+
+        if page_signature and page_signature in visited_comment_pages:
+            print(f"      ⚠️ 댓글 {current_cmt_page}페이지가 반복되어 안전하게 수집을 종료합니다.")
+            break
+
+        if page_signature:
+            visited_comment_pages.add(page_signature)
+
+        parse_visible_comments(page_html)
+        print(f"      💬 댓글 {current_cmt_page}페이지 수집 완료 (누적 {len(collected_comments)}개)")
+
         next_page_num = current_cmt_page + 1
         page_buttons = page.locator(".cmt_paging a, .comment_numbox a")
         clicked = False
         
+        # 1. 우선 화면에 다음 숫자 버튼이 있으면 기존 방식 그대로 이동합니다.
         for i in range(page_buttons.count()):
             btn = page_buttons.nth(i)
             if btn.inner_text().strip() == str(next_page_num):
@@ -649,12 +776,43 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
                 current_cmt_page = next_page_num
                 clicked = True
                 break
-        if not clicked: break
+
+        # 2. 숫자 버튼이 없으면 30페이지 이후에 나타나는 다음 페이지 묶음 버튼을 찾습니다.
+        if not clicked:
+            next_block_buttons = page.locator(
+                ".cmt_paging a.page_next, "
+                ".comment_numbox a.page_next, "
+                ".cmt_paging a[class*='next'], "
+                ".comment_numbox a[class*='next'], "
+                ".cmt_paging a[title*='다음'], "
+                ".comment_numbox a[title*='다음']"
+            )
+
+            for i in range(next_block_buttons.count()):
+                btn = next_block_buttons.nth(i)
+                try:
+                    if not btn.is_visible():
+                        continue
+
+                    with page.expect_response(lambda r: "comment" in r.url, timeout=5000):
+                        btn.evaluate("node => node.click()")
+                    page.wait_for_timeout(300)
+                except Exception as e:
+                    print(f"      ⚠️ 다음 댓글 묶음 이동 지연, 안전 모드 대기: {e}")
+                    time.sleep(2.0)
+
+                current_cmt_page = next_page_num
+                clicked = True
+                print(f"      ➡️ 댓글 다음 페이지 묶음으로 이동합니다. ({current_cmt_page}페이지)")
+                break
+
+        if not clicked:
+            break
 
     dccon_cache = load_dccon_cache()
     
     for c in collected_comments:
-        cache_key = f"{c['writer']}|{c['text']}|{c['date']}"
+        cache_key = make_comment_fallback_key(c)
         if cache_key in existing_comments_cache:
             c["dccon"] = existing_comments_cache[cache_key].get("dccon", "")
             c["comment_img"] = existing_comments_cache[cache_key].get("comment_img", "")
@@ -720,6 +878,14 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
         if "raw_dccon" in c: del c["raw_dccon"]
         if "raw_cmt_img" in c: del c["raw_cmt_img"]
 
+    if update_comments_only and old_comments:
+        newly_collected_count = len(collected_comments)
+        collected_comments = merge_comments_preserving_existing(old_comments, collected_comments)
+        print(
+            f"      🧩 기존 댓글 {len(old_comments)}개 유지 + 현재 댓글 {newly_collected_count}개 병합 "
+            f"= 보존 댓글 {len(collected_comments)}개"
+        )
+
     # 💡 [추가6] 투표(Poll) 실시간 텍스트 추출 로직 (이미지 캡처는 건드리지 않고 텍스트만 갱신)
     if has_poll or poll_drive_url:
         poll_frame_live = next((f for f in page.frames if "poll" in f.url), None)
@@ -760,6 +926,8 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
 
     with open(html_path, "w", encoding="utf-8") as f: f.write(html_template)
     
+    live_comment_count = int(re.search(r"\d+", comment_count_top).group()) if re.search(r"\d+", comment_count_top) else len(collected_comments)
+
     post_meta = {
         # 🆕 HTML 목록과 리더가 실제 글 번호와 저장 폴더를 구분할 수 있도록 함께 기록합니다.
         "gallery_id": target_gallery,
@@ -770,6 +938,7 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
         "views": views_val,
         "recommend": recommend_val,
         "comment_count": len(collected_comments),
+        "live_comment_count": live_comment_count,
         "image_count": image_count,
         "thumbnail": thumbnail_url,
         "has_poll": bool(poll_drive_url or has_poll or poll_text_html) # 💡 꼬리표 추가
@@ -856,17 +1025,43 @@ def run_direct_archiver():
         
         for target_gall, post_no in target_items:
             scanned_count += 1
+            success = False
             # 🆕 중복 판정도 글 번호 단독이 아닌 갤러리별 고유 키로 처리합니다.
             archive_key = make_archive_key(target_gall, post_no)
             is_completed = archive_key in completed_posts
             
             # 중복 강제 덮어쓰기 옵션(FORCE_OVERWRITE) 확인
             if is_completed and not FORCE_OVERWRITE:
-                saved_cmt_count = completed_posts[archive_key].get("comment_count", 0)
+                saved_cmt_count = completed_posts[archive_key].get(
+                    "live_comment_count",
+                    completed_posts[archive_key].get("comment_count", 0)
+                )
                 print(f"\n▶ [{post_no}번] 타겟 분석 중... (이미 완료 목록에 존재)")
+
+                # 💡 자동 아카이버와 동일하게 원문 댓글 수가 같으면 전체 댓글 재수집을 생략합니다.
+                target_url = f"https://gall.dcinside.com/board/view/?id={target_gall}&no={post_no}"
+                try:
+                    post_page.goto(target_url, timeout=20000, wait_until="domcontentloaded")
+                    post_page.wait_for_timeout(500)
+                    count_soup = BeautifulSoup(post_page.content(), "html.parser")
+                    comment_count_el = count_soup.select_one(".gall_comment")
+                    comment_count_text = comment_count_el.text.strip() if comment_count_el else "댓글 0"
+                    current_cmt_count = int(re.search(r"\d+", comment_count_text).group()) if re.search(r"\d+", comment_count_text) else 0
+                except Exception as e:
+                    print(f"      ⚠️ 원문 댓글 수 확인 실패로 안전하게 전체 동기화를 진행합니다: {e}")
+                    current_cmt_count = None
+
+                if current_cmt_count is not None and current_cmt_count == saved_cmt_count:
+                    print(f"   └─ [{post_no}번] 댓글 변동 없음 ({current_cmt_count}개). 재수집을 생략합니다.")
+                    continue
+
+                if current_cmt_count is not None:
+                    print(f"   └─ 댓글 수 변동 감지 (기존 원문 {saved_cmt_count}개 -> 현재 원문 {current_cmt_count}개)")
+
                 success, post_meta = archive_single_post(post_no, target_gall, post_page, drive_service, creds, folder_id, update_comments_only=True)
                 if success:
                     completed_posts[archive_key]["comment_count"] = post_meta["comment_count"]
+                    completed_posts[archive_key]["live_comment_count"] = post_meta["live_comment_count"]
                     completed_posts[archive_key]["views"] = post_meta["views"]       # 💡 이 줄 추가
                     completed_posts[archive_key]["recommend"] = post_meta["recommend"] # 💡 이 줄 추가
                     completed_posts[archive_key]["gallery_id"] = target_gall

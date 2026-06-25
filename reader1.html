@@ -18,11 +18,10 @@
         body, html { 
             margin: 0; 
             padding: 0; 
-            width: 100vw; 
-            height: 100vh; 
-
-            /* 📱 모바일 사파리 아이프레임 팽창 버그 방지용 (외부 스크롤 차단) */
-            overflow: hidden; 
+            width: 100%; 
+            min-height: 100%; 
+            overflow-x: hidden;
+            overflow-y: auto;
             background-color: var(--bg-color); 
             color: var(--text-color); 
             font-family: 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif; 
@@ -96,15 +95,17 @@
         /* 📱 모바일 전용 독립 스크롤 영역 구축 */
         #iframe-wrapper {
             width: 100%; 
-            height: 100vh; 
-            overflow-y: auto; 
+            min-height: 100vh;
+            height: auto;
+            overflow: visible;
             -webkit-overflow-scrolling: touch; /* 아이폰 부드러운 스크롤 */
             display: none;
         }
 
         #viewer-frame { 
             width: 100%; 
-            height: 100%; 
+            min-height: 100vh;
+            height: 100vh;
             border: none; 
             display: block; 
             background: white;
@@ -157,7 +158,7 @@
 
 <!-- 아이프레임을 div 껍데기로 한 겹 감싸서 모바일 팽창 버그를 원천 봉쇄합니다 -->
 <div id="iframe-wrapper">
-    <iframe id="viewer-frame"></iframe>
+    <iframe id="viewer-frame" scrolling="no"></iframe>
 </div>
 
 <script>
@@ -183,13 +184,10 @@
     // ==============================================================================
     // [ 모바일 댓글 페이지 버튼 표시 보완 ]
     // ==============================================================================
-    // 기존 saved_post.html은 댓글 페이지 버튼을 한 줄에 모두 표시합니다.
-    // 모바일에서는 화면 너비를 넘은 버튼이 잘릴 수 있으므로,
-    // iframe 안의 게시물이 열린 뒤 모바일용 CSS를 추가합니다.
-    //
-    // 이 방식은 기존 saved_post.html을 수정하거나 재생성하지 않습니다.
-    // 따라서 원문이 삭제된 기존 아카이브에도 동일하게 적용됩니다.
-    function applyMobilePaginationFix(iframe) {
+    // 게시물의 실제 높이에 맞춰 iframe을 자동으로 늘리고 바깥 문서에서 스크롤합니다.
+    // 댓글 페이지 이동, 정렬 변경, 이미지 로딩으로 높이가 바뀌어도 다시 계산합니다.
+    // 기존 saved_post.html은 수정하거나 재생성하지 않습니다.
+    function setupResponsiveIframe(iframe) {
         try {
             const iframeDocument =
                 iframe.contentDocument ||
@@ -207,6 +205,11 @@
 
             style.textContent = `
                 @media (max-width: 768px) {
+                    html,
+                    body {
+                        overflow: hidden !important;
+                    }
+
                     .pagination {
                         display: flex !important;
                         flex-wrap: wrap !important;
@@ -230,8 +233,98 @@
             `;
 
             iframeDocument.head.appendChild(style);
+
+            let resizeFrameId = null;
+
+            function syncIframeHeight() {
+                if (resizeFrameId !== null) {
+                    cancelAnimationFrame(resizeFrameId);
+                }
+
+                resizeFrameId = requestAnimationFrame(function () {
+                    const html = iframeDocument.documentElement;
+                    const body = iframeDocument.body;
+                    if (!html || !body) return;
+
+                    // 이전 iframe 높이가 scrollHeight 계산을 부풀리지 않도록 잠시 최소화합니다.
+                    iframe.style.height = '1px';
+
+                    const contentHeight = Math.max(
+                        html.scrollHeight,
+                        html.offsetHeight,
+                        body.scrollHeight,
+                        body.offsetHeight
+                    );
+
+                    iframe.style.height = Math.max(contentHeight + 4, window.innerHeight) + 'px';
+                    resizeFrameId = null;
+                });
+            }
+
+            function scrollToCommentSection() {
+                const commentSection = iframeDocument.getElementById('comment-section');
+                if (!commentSection) return;
+
+                const iframeTop = iframe.getBoundingClientRect().top + window.scrollY;
+                window.scrollTo({
+                    top: iframeTop + commentSection.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+            }
+
+            // 댓글 렌더링으로 DOM 높이가 달라지는 경우를 감시합니다.
+            const mutationObserver = new MutationObserver(syncIframeHeight);
+            if (iframeDocument.body) {
+                mutationObserver.observe(iframeDocument.body, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true
+                });
+            }
+
+            // 모바일 브라우저의 글꼴·레이아웃 변화도 함께 반영합니다.
+            if (typeof ResizeObserver !== 'undefined' && iframeDocument.body) {
+                const resizeObserver = new ResizeObserver(syncIframeHeight);
+                resizeObserver.observe(iframeDocument.body);
+            }
+
+            // 늦게 불러오는 본문·댓글 이미지의 높이를 반영합니다.
+            iframeDocument.querySelectorAll('img').forEach(function (image) {
+                if (!image.complete) {
+                    image.addEventListener('load', syncIframeHeight, { once: true });
+                    image.addEventListener('error', syncIframeHeight, { once: true });
+                }
+            });
+
+            // 댓글 페이지와 정렬을 바꾼 뒤 높이와 바깥 스크롤 위치를 다시 맞춥니다.
+            iframeDocument.addEventListener('click', function (event) {
+                const target = event.target.closest('.page-btn, .control-btn, .comment-jump-btn');
+                if (!target) return;
+
+                setTimeout(function () {
+                    syncIframeHeight();
+                    if (target.matches('.page-btn, .control-btn')) {
+                        scrollToCommentSection();
+                    }
+                }, 0);
+            });
+
+            iframeDocument.addEventListener('change', function (event) {
+                if (event.target && event.target.id === 'limit-select') {
+                    setTimeout(function () {
+                        syncIframeHeight();
+                        scrollToCommentSection();
+                    }, 0);
+                }
+            });
+
+            window.addEventListener('resize', syncIframeHeight);
+
+            syncIframeHeight();
+            setTimeout(syncIframeHeight, 300);
+            setTimeout(syncIframeHeight, 1000);
         } catch (error) {
-            console.error('모바일 댓글 페이지 버튼 CSS 적용 실패:', error);
+            console.error('모바일 iframe 높이 조정 실패:', error);
         }
     }
 
@@ -261,9 +354,9 @@
 
         const iframe = document.getElementById('viewer-frame');
 
-        // 📱 게시물 로딩이 끝난 뒤 iframe 내부에 모바일 페이지 버튼 CSS를 적용합니다.
+        // 📱 게시물 로딩이 끝난 뒤 iframe 전체 높이와 댓글 페이지 표시를 맞춥니다.
         iframe.onload = function () {
-            applyMobilePaginationFix(iframe);
+            setupResponsiveIframe(iframe);
         };
 
         iframe.src = `./archive/${archiveKey}/saved_post.html`;
