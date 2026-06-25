@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>만화갤러리 개인 도서관</title>
+
+    <script>
+        // ==============================================================================
+        // [ 갤러리 표시 이름 설정 영역 ]
+        // ==============================================================================
+        // 1. 왼쪽에는 디시 주소의 id= 뒤에 있는 실제 갤러리 ID를 적습니다.
+        // 2. 오른쪽에는 카드와 갤러리 선택 목록에 보여줄 짧은 이름을 적습니다.
+        // 3. 새 갤러리가 들어오면 아래에 한 줄만 추가하면 됩니다.
+        // 4. 각 항목 끝에 쉼표(,)를 붙이면 나중에 항목을 추가하기 편합니다.
+        // 5. 등록하지 않은 갤러리도 누락되지 않고 실제 갤러리 ID로 표시됩니다.
+        // 6. 기존 숫자 폴더 자료는 comic_new6으로 판단하여 만갤6으로 표시합니다.
+        const GALLERY_NAMES = {
+            "comic_new3": "만갤3",
+            "comic_new5": "만갤5",
+            "comic_new6": "만갤6",
+            "bocchi_the_rock": "봇치갤",
+
+            // 새 갤러리 추가 예시:
+            // "genrenovel": "장르소설갤",
+            // "comic_new7": "만갤7",
+        };
+        // ==============================================================================
+    </script>
+
     <style>
         :root { --bg-color: #f8fafc; --card-bg: #ffffff; --border-color: #cbd5e1; --text-color: #0f172a; --text-sub: #475569; --primary-color: #1d4ed8; --accent-color: #dc2626; }
         body { font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 40px 20px; }
@@ -14,9 +38,15 @@
         .search-bar { width: 100%; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-color); font-size: 15px; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
         .search-bar:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25); }
         .tabs-container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+        .tabs { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .tab-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .tab-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
+
+        /* 💡 갤러리별 버튼을 눌렀을 때만 표시되는 단일 선택 목록 */
+        .gallery-select { display: none; padding: 9px 13px; border-radius: 20px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-sub); font-size: 13px; font-weight: bold; cursor: pointer; }
+        .gallery-select.active { display: block; }
+        .gallery-select:focus { outline: none; border-color: var(--primary-color); }
+
         .sub-tabs { display: none; gap: 6px; }
         .sub-tabs.active { display: flex; }
         .sub-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
@@ -33,7 +63,8 @@
         .meta-recom { color: var(--accent-color); }
         .meta-cmt { color: var(--primary-color); }
         .meta-view { color: var(--text-sub); font-size: 11px; }
-        .book-date { font-size: 11px; color: var(--text-sub); margin-top: 8px; }
+        .book-date { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 11px; color: var(--text-sub); margin-top: 8px; }
+        .book-gallery { max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
         .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 50px; margin-bottom: 30px; flex-wrap: wrap; }
         .page-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .page-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
@@ -47,6 +78,7 @@
             .book-meta { gap: 4px; font-size: 11px; }
             .controls { margin-bottom: 20px; }
             .search-bar { font-size: 14px; padding: 12px; }
+            .gallery-select { padding: 7px 10px; font-size: 11px; }
             .tabs-container { justify-content: center; }
             .tab-btn { padding: 8px 12px; font-size: 12px; }
             .sub-btn { padding: 6px 10px; font-size: 11px; }
@@ -60,6 +92,7 @@
     </header>
     <div class="controls">
         <input type="text" id="search-input" class="search-bar" placeholder="만화 제목 또는 초성을 검색하세요...">
+
         <div class="tabs-container">
             <div class="tabs">
                 <button class="tab-btn active" id="btn-latest" onclick="setSort('latest')">최신순</button>
@@ -67,7 +100,13 @@
                 <!-- 💡 추가된 정렬 버튼 -->
                 <button class="tab-btn" id="btn-cmt" onclick="setSort('cmt')">댓글순</button>
                 <button class="tab-btn" id="btn-view" onclick="setSort('view')">조회순</button>
+
+                <!-- 💡 갤러리별 보기 버튼 및 단일 선택 목록 -->
+                <button class="tab-btn" id="btn-gallery" onclick="setSort('gallery')">갤러리별</button>
+                <select class="gallery-select" id="gallery-select" onchange="setGallery(this.value)"></select>
             </div>
+
+            <!-- 기존 기간 필터는 그대로 유지합니다. -->
             <div class="sub-tabs" id="sub-tabs-area">
                 <button class="sub-btn active" id="sub-all" onclick="setSubFilter('all')">역대</button>
                 <button class="sub-btn" id="sub-year" onclick="setSubFilter('year')">연간</button>
@@ -76,12 +115,79 @@
             </div>
         </div>
     </div>
+
     <div class="bookshelf-grid" id="bookshelf"></div>
     <div class="pagination" id="shelf-pagination"></div>
 </div>
+
 <script>
-    let archiveData = {}; let currentSort = 'latest'; let currentSubFilter = 'all'; let currentShelfPage = 1; const itemsPerPage = 24; 
+    let archiveData = {}; let currentSort = 'latest'; let currentSubFilter = 'all'; let currentGallery = 'comic_new6'; let currentShelfPage = 1; const itemsPerPage = 24; 
     const CHOSUNG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+    // JSON 메타데이터를 우선 사용하고, 없으면 저장 폴더 키에서 갤러리 ID를 복원합니다.
+    function getGalleryId(archiveKey, itemData) {
+        if (itemData.gallery_id) return itemData.gallery_id;
+
+        // 기존 숫자 폴더 자료는 만갤6으로 처리합니다.
+        if (/^\d+$/.test(archiveKey)) return 'comic_new6';
+
+        // 새 폴더 형식: 갤러리ID_글번호
+        const match = archiveKey.match(/^(.+)_(\d+)$/);
+        return match ? match[1] : 'unknown';
+    }
+
+    function getGalleryName(galleryId) {
+        return GALLERY_NAMES[galleryId] || galleryId;
+    }
+
+    function buildArchiveItems() {
+        return Object.keys(archiveData).map(key => {
+            const itemData = archiveData[key] || {};
+            const numberMatch = key.match(/(\d+)$/);
+            const galleryId = getGalleryId(key, itemData);
+
+            return {
+                ...itemData,
+                archive_key: key,
+                post_no: String(itemData.post_no || (numberMatch ? numberMatch[1] : key)),
+                gallery_id: galleryId,
+                gallery_name: getGalleryName(galleryId)
+            };
+        });
+    }
+
+    // completed_posts.json에 실제로 존재하는 갤러리만 선택 목록에 표시합니다.
+    function renderGallerySelect() {
+        const gallerySelect = document.getElementById('gallery-select');
+        gallerySelect.innerHTML = '';
+
+        const allOption = document.createElement('option');
+        allOption.value = 'all';
+        allOption.innerText = '모든 갤';
+        gallerySelect.appendChild(allOption);
+
+        const galleryMap = new Map();
+        buildArchiveItems().forEach(item => {
+            galleryMap.set(item.gallery_id, item.gallery_name);
+        });
+
+        const galleries = [...galleryMap.entries()].sort((a, b) => a[1].localeCompare(b[1], 'ko'));
+
+        galleries.forEach(([galleryId, galleryName]) => {
+            const option = document.createElement('option');
+            option.value = galleryId;
+            option.innerText = galleryName;
+            gallerySelect.appendChild(option);
+        });
+
+        // 기본값은 만갤6이며, 만갤6이 없으면 모든 갤로 처리합니다.
+        if (galleryMap.has(currentGallery)) {
+            gallerySelect.value = currentGallery;
+        } else {
+            currentGallery = 'all';
+            gallerySelect.value = 'all';
+        }
+    }
     
     function getChosung(str) {
         let result = "";
@@ -112,6 +218,7 @@
             const response = await fetch('./archive/completed_posts.json?v=' + Date.now());
             if (!response.ok) throw new Error("데이터 로딩 실패");
             archiveData = await response.json();
+            renderGallerySelect();
             renderBookshelf();
         } catch (error) {
             bookshelf.innerHTML = `<div style="color:#dc2626; padding: 25px;">❌ 데이터를 불러오지 못했습니다. 파이썬을 한 번 실행해 데이터(completed_posts.json)를 만들어 주세요.</div>`;
@@ -126,26 +233,23 @@
 
         // 🆕 JSON의 키는 실제 저장 폴더를 가리키는 archive_key로 사용합니다.
         // 기존 만갤6 숫자 키와 새 형식(comic_new3_1742096)을 모두 지원합니다.
-        let items = Object.keys(archiveData).map(key => {
-            const itemData = archiveData[key] || {};
-            const numberMatch = key.match(/(\d+)$/);
+        let items = buildArchiveItems();
 
-            return {
-                ...itemData,
-                archive_key: key,
-                post_no: String(itemData.post_no || (numberMatch ? numberMatch[1] : key))
-            };
-        });
+        // 💡 갤러리별 보기일 때만 선택한 갤러리 필터를 적용합니다.
+        if (currentSort === 'gallery' && currentGallery !== 'all') {
+            items = items.filter(item => item.gallery_id === currentGallery);
+        }
         
         if (searchQuery) {
             items = items.filter(item => {
-                const titleLower = item.title.toLowerCase(); const titleChosung = getChosung(titleLower);
-                return titleLower.includes(searchQuery) || titleChosung.includes(searchChosung);
+                const titleLower = (item.title || '').toLowerCase(); const titleChosung = getChosung(titleLower);
+                const galleryLower = (item.gallery_name || '').toLowerCase();
+                return titleLower.includes(searchQuery) || titleChosung.includes(searchChosung) || galleryLower.includes(searchQuery);
             });
         }
         
         const now = new Date();
-        // 💡 최신순이 아닌 모든 정렬(추천/댓글/조회순)에서 기간 필터 작동
+        // 💡 최신순이 아닌 모든 정렬(추천/댓글/조회순/갤러리별)에서 기간 필터 작동
         if (currentSort !== 'latest' && currentSubFilter !== 'all') {
             items = items.filter(item => {
                 const postDate = parseDcDate(item.date);
@@ -157,8 +261,8 @@
             });
         }
         
-        // 💡 추가된 4가지 정렬 로직 분기
-        if (currentSort === 'latest') {
+        // 💡 추가된 5가지 정렬 로직 분기
+        if (currentSort === 'latest' || currentSort === 'gallery') {
             items.sort((a, b) => {
                 const dateA = parseDcDate(a.date);
                 const dateB = parseDcDate(b.date);
@@ -197,7 +301,10 @@
                         </div>
                         <div class="meta-view">👁️ 조회수 ${item.views ? item.views.toLocaleString() : 0}</div>
                     </div>
-                    <div class="book-date">${item.date ? item.date.split(' ')[0] : '날짜 없음'}</div>
+                    <div class="book-date">
+                        <span>${item.date ? item.date.split(' ')[0] : '날짜 없음'}</span>
+                        <span class="book-gallery" title="${item.gallery_name}">${item.gallery_name}</span>
+                    </div>
                 </div>
             `;
             bookshelf.appendChild(card);
@@ -257,8 +364,11 @@
         currentSort = type; currentShelfPage = 1; 
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('btn-' + type).classList.add('active');
+
+        // 갤러리 선택 목록은 갤러리별 버튼을 선택했을 때만 표시
+        document.getElementById('gallery-select').classList.toggle('active', type === 'gallery');
         
-        // 서브 탭(주/월/연간)은 최신순일 때만 숨기고, 추천/댓글/조회순일 때는 나타남
+        // 서브 탭(주/월/연간)은 최신순일 때만 숨기고, 추천/댓글/조회/갤러리별일 때는 나타남
         document.getElementById('sub-tabs-area').classList.toggle('active', type !== 'latest');
         renderBookshelf();
     }
@@ -267,6 +377,13 @@
         currentSubFilter = filter; currentShelfPage = 1; 
         document.querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('sub-' + filter).classList.add('active');
+        renderBookshelf();
+    }
+
+    // 💡 갤러리 선택 목록 전환 함수
+    function setGallery(galleryId) {
+        currentGallery = galleryId;
+        currentShelfPage = 1;
         renderBookshelf();
     }
     
