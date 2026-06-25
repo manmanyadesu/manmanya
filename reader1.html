@@ -119,14 +119,26 @@
         }
     }
     function loadManga() {
-        const urlParams = new URLSearchParams(window.location.search); const postNo = urlParams.get('no');
-        if (!postNo) { alert("잘못된 접근입니다."); window.location.href = './index1.html'; return; }
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 🆕 다른 갤러리는 key(예: comic_new3_1742096)를 사용하고,
+        // 기존 만갤6 자료는 기존 no(예: 1742096) 방식도 그대로 지원합니다.
+        const archiveKey = urlParams.get('key') || urlParams.get('no');
+
+        if (!archiveKey) { alert("잘못된 접근입니다."); window.location.href = './index1.html'; return; }
+
+        // 🆕 숫자 또는 영문·숫자·밑줄로 구성된 안전한 폴더 이름만 허용합니다.
+        if (!/^[a-zA-Z0-9_]+$/.test(archiveKey)) {
+            alert("잘못된 아카이브 식별자입니다.");
+            window.location.href = './index1.html';
+            return;
+        }
         
         // 래퍼를 띄우고 그 안에 문서를 넣습니다.
         const wrapper = document.getElementById('iframe-wrapper'); 
         wrapper.style.display = 'block';
         const iframe = document.getElementById('viewer-frame'); 
-        iframe.src = `./archive/${postNo}/saved_post.html`;
+        iframe.src = `./archive/${archiveKey}/saved_post.html`;
     }
 </script>
 </body>

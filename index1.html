@@ -123,7 +123,19 @@
         bookshelf.innerHTML = ''; paginationArea.innerHTML = '';
         const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
         const searchChosung = getChosung(searchQuery);
-        let items = Object.keys(archiveData).map(key => ({ post_no: key, ...archiveData[key] }));
+
+        // 🆕 JSON의 키는 실제 저장 폴더를 가리키는 archive_key로 사용합니다.
+        // 기존 만갤6 숫자 키와 새 형식(comic_new3_1742096)을 모두 지원합니다.
+        let items = Object.keys(archiveData).map(key => {
+            const itemData = archiveData[key] || {};
+            const numberMatch = key.match(/(\d+)$/);
+
+            return {
+                ...itemData,
+                archive_key: key,
+                post_no: String(itemData.post_no || (numberMatch ? numberMatch[1] : key))
+            };
+        });
         
         if (searchQuery) {
             items = items.filter(item => {
@@ -151,7 +163,8 @@
                 const dateA = parseDcDate(a.date);
                 const dateB = parseDcDate(b.date);
                 if (dateB.getTime() === dateA.getTime()) {
-                    return parseInt(b.post_no) - parseInt(a.post_no);
+                    // 🆕 고유 키가 아니라 실제 글 번호를 이용해 동률을 정렬합니다.
+                    return parseInt(b.post_no, 10) - parseInt(a.post_no, 10);
                 }
                 return dateB - dateA;
             });
@@ -168,7 +181,10 @@
         
         pageItems.forEach(item => {
             const card = document.createElement('a'); card.className = 'book-card';
-            card.href = `./reader1.html?no=${item.post_no}`;
+
+            // 🆕 실제 저장 폴더를 가리키는 고유 키를 reader1.html에 전달합니다.
+            card.href = `./reader1.html?key=${encodeURIComponent(item.archive_key)}`;
+
             const thumbUrl = item.thumbnail || 'https://via.placeholder.com/180x240/f1f5f9/94a3b8?text=NO+THUMB';
             card.innerHTML = `
                 <div class="thumbnail-box"><img src="${thumbUrl}" alt="썸네일" loading="lazy"></div>

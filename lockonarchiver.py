@@ -4,10 +4,14 @@
 DEFAULT_GALLERY_ID = "comic_new6"       # 링크가 아닌 '숫자'만 적었을 때 적용할 기본 갤러리 ID
 FORCE_OVERWRITE = False                 # True로 설정 시 이미 수집된 글도 무조건 원본 이미지를 새로 받습니다.
 
+# 🆕 기존 만갤6 자료는 숫자 폴더/숫자 JSON 키를 그대로 유지합니다.
+# 나중에 기본 갤러리가 comic_new7 등으로 바뀌더라도 이 값은 comic_new6 그대로 두세요.
+LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
+
 # 🎯 수집하고 싶은 디시인사이드 글 번호 또는 주소 링크를 여기에 "줄바꿈(Enter)"으로 붙여넣어 주세요!
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
-
+https://gall.dcinside.com/board/view/?id=comic_new3&no=1742096
 """
 
 # 💡 RAW 문자열로부터 리스트를 분리 가로채 메모리에 할당 (NameError 방지)
@@ -202,8 +206,19 @@ def normalize_comment_date(date_str):
         
     return date_str
 
+# 🆕 갤러리별 글 번호 충돌을 막는 아카이브 고유 키 생성 함수
+# 기존 만갤6은 예전 자료와 호환되도록 "1742096" 형태를 유지하고,
+# 그 외 갤러리는 "comic_new3_1742096" 형태로 저장합니다.
+def make_archive_key(gallery_id, post_no):
+    gallery_id = str(gallery_id).strip()
+    post_no = str(post_no).strip()
+    if gallery_id == LEGACY_UNPREFIXED_GALLERY_ID:
+        return post_no
+    return f"{gallery_id}_{post_no}"
+
 def rebuild_html_locally(post_no, target_gallery=DEFAULT_GALLERY_ID):
-    save_dir = f"{BASE_DIR}/{post_no}"
+    archive_key = make_archive_key(target_gallery, post_no)
+    save_dir = f"{BASE_DIR}/{archive_key}"
     html_path = f"{save_dir}/saved_post.html"
     if not os.path.exists(html_path): return False
     
@@ -266,8 +281,8 @@ def rebuild_html_locally(post_no, target_gallery=DEFAULT_GALLERY_ID):
                 poll_text_html = str(text_el)
 
         completed_posts = load_checkpoint()
-        image_count = completed_posts.get(post_no, {}).get("image_count", 0)
-        thumbnail_url = completed_posts.get(post_no, {}).get("thumbnail", "")
+        image_count = completed_posts.get(archive_key, {}).get("image_count", 0)
+        thumbnail_url = completed_posts.get(archive_key, {}).get("thumbnail", "")
         
         target_url = f"https://gall.dcinside.com/board/view/?id={target_gallery}&no={post_no}"
         
@@ -335,7 +350,9 @@ def rebuild_html_locally(post_no, target_gallery=DEFAULT_GALLERY_ID):
 
 def archive_single_post(post_no, target_gallery, page, drive_service, creds, folder_id, update_comments_only=False):
     target_url = f"https://gall.dcinside.com/board/view/?id={target_gallery}&no={post_no}"
-    save_dir = f"{BASE_DIR}/{post_no}"
+    # 🆕 폴더 이름도 체크포인트와 동일한 고유 키를 사용합니다.
+    archive_key = make_archive_key(target_gallery, post_no)
+    save_dir = f"{BASE_DIR}/{archive_key}"
     img_dir = f"{save_dir}/images"
     os.makedirs(img_dir, exist_ok=True)
     
@@ -408,8 +425,8 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
                     poll_text_html = str(text_el)
                 
             completed_posts = load_checkpoint()
-            image_count = completed_posts.get(post_no, {}).get("image_count", 0)
-            thumbnail_url = completed_posts.get(post_no, {}).get("thumbnail", "")
+            image_count = completed_posts.get(archive_key, {}).get("image_count", 0)
+            thumbnail_url = completed_posts.get(archive_key, {}).get("thumbnail", "")
 
             script_tags = old_soup.find_all("script")
             for s in script_tags:
@@ -741,6 +758,10 @@ def archive_single_post(post_no, target_gallery, page, drive_service, creds, fol
     with open(html_path, "w", encoding="utf-8") as f: f.write(html_template)
     
     post_meta = {
+        # 🆕 HTML 목록과 리더가 실제 글 번호와 저장 폴더를 구분할 수 있도록 함께 기록합니다.
+        "gallery_id": target_gallery,
+        "post_no": str(post_no),
+        "archive_key": archive_key,
         "title": title,
         "date": date_top,
         "views": views_val,
@@ -832,17 +853,22 @@ def run_direct_archiver():
         
         for target_gall, post_no in target_items:
             scanned_count += 1
-            is_completed = post_no in completed_posts
+            # 🆕 중복 판정도 글 번호 단독이 아닌 갤러리별 고유 키로 처리합니다.
+            archive_key = make_archive_key(target_gall, post_no)
+            is_completed = archive_key in completed_posts
             
             # 중복 강제 덮어쓰기 옵션(FORCE_OVERWRITE) 확인
             if is_completed and not FORCE_OVERWRITE:
-                saved_cmt_count = completed_posts[post_no].get("comment_count", 0)
+                saved_cmt_count = completed_posts[archive_key].get("comment_count", 0)
                 print(f"\n▶ [{post_no}번] 타겟 분석 중... (이미 완료 목록에 존재)")
                 success, post_meta = archive_single_post(post_no, target_gall, post_page, drive_service, creds, folder_id, update_comments_only=True)
                 if success:
-                    completed_posts[post_no]["comment_count"] = post_meta["comment_count"]
-                    completed_posts[post_no]["views"] = post_meta["views"]       # 💡 이 줄 추가
-                    completed_posts[post_no]["recommend"] = post_meta["recommend"] # 💡 이 줄 추가
+                    completed_posts[archive_key]["comment_count"] = post_meta["comment_count"]
+                    completed_posts[archive_key]["views"] = post_meta["views"]       # 💡 이 줄 추가
+                    completed_posts[archive_key]["recommend"] = post_meta["recommend"] # 💡 이 줄 추가
+                    completed_posts[archive_key]["gallery_id"] = target_gall
+                    completed_posts[archive_key]["post_no"] = str(post_no)
+                    completed_posts[archive_key]["archive_key"] = archive_key
                     poll_msg = " 투표 동기화 완료!" if post_meta.get("has_poll") else ""
                     print(f"   └─ [{post_no}번] 댓글 동기화 완료!{poll_msg} (수집된 이미지: {post_meta['image_count']}개, 총 댓글: {post_meta['comment_count']}개) [다이렉트 진척도: {scanned_count}/{total_targets}]")
             else:
@@ -853,7 +879,7 @@ def run_direct_archiver():
                     
                 success, post_meta = archive_single_post(post_no, target_gall, post_page, drive_service, creds, folder_id, update_comments_only=False)
                 if success:
-                    completed_posts[post_no] = {"comment_count": post_meta["comment_count"], **post_meta}
+                    completed_posts[archive_key] = {"comment_count": post_meta["comment_count"], **post_meta}
                     poll_msg = " 투표 수집 완료!" if post_meta.get("has_poll") else ""
                     print(f"   └─ [{post_no}번] 수집 성공!{poll_msg} (수집된 이미지: {post_meta['image_count']}개, 총 댓글: {post_meta['comment_count']}개) [다이렉트 진척도: {scanned_count}/{total_targets}]")
 
