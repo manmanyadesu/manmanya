@@ -188,6 +188,139 @@ def normalize_comment_date(date_str):
         
     return date_str
 
+def make_comment_fallback_key(comment):
+    """댓글 ID가 없는 기존 자료를 수량 단위로 대응하기 위한 보조 키입니다."""
+    return (
+        str(comment.get("writer", "")).strip(),
+        str(comment.get("text", "")).strip(),
+        normalize_comment_date(comment.get("date", "")),
+        bool(comment.get("is_reply", False))
+    )
+
+def merge_comments_preserving_existing(old_comments, new_comments):
+    """
+    기존 댓글은 삭제하지 않고 새 댓글만 추가합니다.
+    comment_id를 우선 사용하고, ID가 없는 기존 자료는 동일 보조 키의
+    댓글 수량을 하나씩 대응하여 도배 댓글이 두 배가 되는 것을 막습니다.
+    """
+    merged_comments = [dict(comment) for comment in old_comments]
+    old_id_to_index = {}
+    old_idless_indexes = {}
+
+    for index, comment in enumerate(merged_comments):
+        comment_id = str(comment.get("comment_id", "")).strip()
+        if comment_id:
+            old_id_to_index[comment_id] = index
+        else:
+            key = make_comment_fallback_key(comment)
+            old_idless_indexes.setdefault(key, []).append(index)
+
+    old_idless_positions = {key: 0 for key in old_idless_indexes}
+    additions = []
+
+    for new_comment in new_comments:
+        new_comment = dict(new_comment)
+        comment_id = str(new_comment.get("comment_id", "")).strip()
+        matched_index = old_id_to_index.get(comment_id) if comment_id else None
+
+        if matched_index is None:
+            key = make_comment_fallback_key(new_comment)
+            candidates = old_idless_indexes.get(key, [])
+            position = old_idless_positions.get(key, 0)
+            if position < len(candidates):
+                matched_index = candidates[position]
+                old_idless_positions[key] = position + 1
+
+        if matched_index is None:
+            additions.append(new_comment)
+            continue
+
+        old_comment = merged_comments[matched_index]
+        preserved_dccon = old_comment.get("dccon", "")
+        preserved_comment_img = old_comment.get("comment_img", "")
+        old_comment.update(new_comment)
+        if not old_comment.get("dccon"):
+            old_comment["dccon"] = preserved_dccon
+        if not old_comment.get("comment_img"):
+            old_comment["comment_img"] = preserved_comment_img
+        if comment_id:
+            old_id_to_index[comment_id] = matched_index
+
+    additions_by_parent = {}
+    standalone_additions = []
+    new_parent_ids = set()
+
+    for comment in additions:
+        if not comment.get("is_reply"):
+            comment_id = str(comment.get("comment_id", "")).strip()
+            if comment_id:
+                new_parent_ids.add(comment_id)
+
+    for comment in additions:
+        parent_comment_id = str(comment.get("parent_comment_id", "")).strip()
+        if comment.get("is_reply") and parent_comment_id:
+            additions_by_parent.setdefault(parent_comment_id, []).append(comment)
+        else:
+            standalone_additions.append(comment)
+
+    existing_parent_insertions = []
+    for parent_comment_id, replies in additions_by_parent.items():
+        if parent_comment_id in old_id_to_index and parent_comment_id not in new_parent_ids:
+            existing_parent_insertions.append((old_id_to_index[parent_comment_id], replies))
+
+    for parent_index, replies in sorted(existing_parent_insertions, reverse=True):
+        insert_index = parent_index + 1
+        while insert_index < len(merged_comments) and merged_comments[insert_index].get("is_reply"):
+            insert_index += 1
+        merged_comments[insert_index:insert_index] = replies
+
+    for comment in standalone_additions:
+        merged_comments.append(comment)
+        comment_id = str(comment.get("comment_id", "")).strip()
+        if not comment.get("is_reply") and comment_id:
+            merged_comments.extend(additions_by_parent.get(comment_id, []))
+
+    handled_parent_ids = {
+        parent_id for parent_id in additions_by_parent
+        if parent_id in old_id_to_index or parent_id in new_parent_ids
+    }
+    for parent_comment_id, replies in additions_by_parent.items():
+        if parent_comment_id not in handled_parent_ids:
+            merged_comments.extend(replies)
+
+    return merged_comments
+
+def saved_post_has_comment_ids(post_no):
+    """
+    기존 저장본의 댓글에 comment_id가 이미 들어 있는지 확인합니다.
+    댓글이 없는 글은 다시 수집할 필요가 없으므로 완료된 것으로 판단합니다.
+    """
+    html_path = f"{BASE_DIR}/{post_no}/saved_post.html"
+    if not os.path.exists(html_path):
+        return False
+
+    try:
+        with open(html_path, "r", encoding="utf-8") as f:
+            html_text = f.read()
+        match = re.search(r"const rawComments = (\[.*?\]);", html_text, re.DOTALL)
+        if not match:
+            return False
+        comments = json.loads(match.group(1))
+        # 삭제되어 원문에서 사라진 옛 댓글은 ID를 복원할 수 있으므로,
+        # 현재 확인 가능한 댓글에 ID가 하나라도 채워졌으면 전환 완료로 봅니다.
+        return not comments or any(str(comment.get("comment_id", "")).strip() for comment in comments)
+    except Exception:
+        return False
+
+def apply_comment_parent_grouping(html_text):
+    """
+    comment_id가 있는 새 자료는 parent_comment_id로 부모·답글을 묶고,
+    ID가 없는 기존 자료는 예전의 저장 순서 방식으로 그대로 표시합니다.
+    """
+    old_script = """let currentSort = 'old', commentsPerPage = 50, currentPage = 1, commentGroups = [], currentGroup = null; rawComments.forEach(c => { if (!c.is_reply) { currentGroup = { parent: c, replies: [] }; commentGroups.push(currentGroup); } else { if (currentGroup) currentGroup.replies.push(c); else { currentGroup = { parent: null, replies: [c] }; commentGroups.push(currentGroup); } } }); function buildWriterHTML"""
+    new_script = """let currentSort = 'old', commentsPerPage = 50, currentPage = 1, commentGroups = [], currentGroup = null, parentGroupsById = new Map(), pendingRepliesByParent = new Map(); rawComments.forEach(c => { if (!c.is_reply) { currentGroup = { parent: c, replies: [] }; commentGroups.push(currentGroup); const commentId = String(c.comment_id || '').trim(); if (commentId) { parentGroupsById.set(commentId, currentGroup); const pendingReplies = pendingRepliesByParent.get(commentId); if (pendingReplies) { currentGroup.replies.push(...pendingReplies); pendingRepliesByParent.delete(commentId); } } } else { const parentId = String(c.parent_comment_id || '').trim(); if (parentId) { const parentGroup = parentGroupsById.get(parentId); if (parentGroup) parentGroup.replies.push(c); else { if (!pendingRepliesByParent.has(parentId)) pendingRepliesByParent.set(parentId, []); pendingRepliesByParent.get(parentId).push(c); } } else if (currentGroup) currentGroup.replies.push(c); else { currentGroup = { parent: null, replies: [c] }; commentGroups.push(currentGroup); } } }); pendingRepliesByParent.forEach(replies => commentGroups.push({ parent: null, replies })); function buildWriterHTML"""
+    return html_text.replace(old_script, new_script)
+
 def rebuild_html_locally(post_no):
     save_dir = f"{BASE_DIR}/{post_no}"
     html_path = f"{save_dir}/saved_post.html"
@@ -269,6 +402,7 @@ def rebuild_html_locally(post_no):
 
         html_template = f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{title} - 아카이브</title><style>body {{ font-family: 'Malgun Gothic', sans-serif; margin: 40px; background-color: #f5f6f7; color: #333; }}.container {{ max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}.post-header {{ border-bottom: 1px solid #ccc; padding-bottom: 15px; margin-bottom: 20px; }}.post-title {{ font-size: 22px; font-weight: bold; color: #222; margin-bottom: 12px; }}.post-title a {{ text-decoration: none; color: inherit; }}.post-title a:hover {{ color: #1d4ed8; }}.post-meta-wrap {{ display: flex; justify-content: space-between; font-size: 13px; color: #666; }}.meta-left .writer {{ font-weight: bold; color: #333; margin-right: 10px; }}.comment-jump-btn {{ background: #f3f3f3; border: 1px solid #e1e1e1; border-radius: 15px; padding: 3px 12px; color: #333; text-decoration: none; font-weight: bold; font-size: 12px; }}.content {{ line-height: 1.8; font-size: 16px; margin-top: 30px; padding-bottom: 40px; }}.content img {{ max-width: 100% !important; height: auto !important; display: block; margin: 15px auto; }}.vote-box-container {{ border: 1px solid #ddd; padding: 30px; border-radius: 8px; margin: 40px auto; max-width: 400px; display: flex; justify-content: center; align-items: center; gap: 30px; background: #fff; }}.vote-number {{ font-size: 22px; font-weight: bold; width: 40px; text-align: center; }}.vote-circles {{ display: flex; gap: 15px; }}.circle-btn {{ width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; color: white; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }}.circle-up {{ background: #3b5998; }} .circle-down {{ background: #a5a5a5; }}.comments-header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b5998; padding-bottom: 10px; margin-top: 40px; }}.comments-title {{ font-size: 16px; font-weight: bold; color: #3b5998; }}.control-btn {{ background: none; border: none; font-size: 13px; cursor: pointer; font-weight: bold; color: #999; margin-right: 5px; }}.control-btn.active {{ color: #3b5998; }}.comment-list-area {{ border-top: 1px solid #3b5998; }}.comment-row {{ display: flex; border-bottom: 1px solid #e2e2e2; padding: 12px 0; align-items: flex-start; }}.comment-writer-box {{ width: 160px; flex-shrink: 0; padding: 0 10px; color: #333; font-weight: bold; font-size: 13px; word-break: break-all; }}.comment-writer-box span.ip {{ color: #999; font-weight: normal; font-size: 11px; }}.comment-content-box {{ flex-grow: 1; padding: 0 10px; font-size: 13px; color: #333; word-break: break-all; }}.comment-content-box img {{ max-width: 200px; border-radius: 4px; display: block; margin-top: 5px; }}.comment-date-box {{ width: 100px; flex-shrink: 0; text-align: right; color: #999; font-size: 12px; padding-right: 10px; }}.reply-row {{ background-color: #f9f9f9; padding-left: 0; border-left: 3px solid #ddd; }}.reply-row .comment-writer-box {{ width: 180px; padding-left: 35px; position: relative; }}.reply-icon {{ position: absolute; left: 12px; top: 0; color: #3b5998; font-weight: 900; }}.deleted-text {{ color: #aaa; font-style: normal; }}.pagination {{ display: flex; justify-content: center; gap: 5px; margin-top: 20px; }}.page-btn {{ border: 1px solid #ddd; background: white; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 13px; }}.page-btn.active {{ background: #3b5998; color: white; font-weight: bold; }}@media (max-width: 768px) {{ body {{ margin: 8px; padding: 0; background-color: #fff; }} .container {{ padding: 10px; border-radius: 0; box-shadow: none; }} .post-title {{ font-size: 18px; line-height: 1.4; }} .post-meta-wrap {{ flex-direction: column; gap: 5px; font-size: 11px; }} .comment-row {{ flex-direction: column; padding: 8px 0; }} .comment-writer-box {{ width: 100%; font-size: 12px; margin-bottom: 4px; }} .comment-content-box {{ width: 100%; font-size: 12px; padding: 0; }} .comment-content-box img {{ max-width: 150px; }} .comment-date-box {{ width: 100%; text-align: left; font-size: 10px; margin-top: 4px; }} .reply-row {{ padding-left: 10px; }} .reply-row .comment-writer-box {{ padding-left: 20px; }} .vote-box-container {{ padding: 15px; margin: 20px auto; gap: 15px; max-width: 100%; }} .content div, .content p, .content table, .content tr, .content td, .content span {{ max-width: 100% !important; width: auto !important; height: auto !important; }} }}</style></head><body><div class="container"><div class="post-header"><div class="post-title"><a href="{target_url}" target="_blank" title="디시인사이드 원문 글로 가기">{title} <span style="font-size:14px; color:#1d4ed8; font-weight:normal; margin-left:6px; vertical-align:middle;">🔗 원문 보기</span></a></div><div class="post-meta-wrap"><div class="meta-left"><span class="writer">{writer_top} {ip_top}</span><span class="date">{date_top}</span></div><div class="meta-right"><span>{views_top}</span> | <span>{recommend_top}</span> | <a href="#comment-section" class="comment-jump-btn">{comment_count_top}</a></div></div></div><div class="content">{content_area_html}</div>{poll_section_html}<div class="vote-box-container"><div class="vote-number" style="color:#d31900;">{upvotes}</div><div class="vote-circles"><div class="circle-btn circle-up"><span style="font-size:22px; color:#ffeb3b;">★</span><span>개념</span></div><div class="circle-btn circle-down"><span style="font-size:22px; color:white;">⬇</span><span>비추</span></div></div><div class="vote-number" style="color:#444;">{downvotes}</div></div><div id="comment-section"><div class="comments-header"><div class="comments-title">댓글 <span id="total-count" style="color:#d31900;">0</span>개</div><div class="comment-controls"><button class="control-btn active" id="sort-old" onclick="changeSort('old')">등록순</button><button class="control-btn" id="sort-new" onclick="changeSort('new')">최신순</button><button class="control-btn" id="sort-reply" onclick="changeSort('reply')">답글순</button><select id="limit-select" onchange="changeLimit(this.value)" style="padding: 2px; font-size: 12px; margin-left: 10px;"><option value="30">30개</option><option value="50" selected>50개</option><option value="100">100개</option><option value="9999">전체 보기</option></select></div></div><div class="comment-list-area" id="comment-list"></div><div class="pagination" id="pagination-buttons"></div></div></div><script>const rawComments = {comments_json_str}; let currentSort = 'old', commentsPerPage = 50, currentPage = 1, commentGroups = [], currentGroup = null; rawComments.forEach(c => {{ if (!c.is_reply) {{ currentGroup = {{ parent: c, replies: [] }}; commentGroups.push(currentGroup); }} else {{ if (currentGroup) currentGroup.replies.push(c); else {{ currentGroup = {{ parent: null, replies: [c] }}; commentGroups.push(currentGroup); }} }} }}); function buildWriterHTML(writerStr) {{ let match = writerStr.match(/(.+)\\s(\\([0-9.]+\\))$/); return match ? `${{match[1]}} <span class="ip">${{match[2]}}</span>` : writerStr; }} function buildContentHTML(c) {{ if (c.text.includes("삭제된 댓글")) return `<span class="deleted-text">${{c.text}}</span>`; let html = c.text.replace(/\\n/g, "<br>"); if (c.dccon) html += `<br><img src="${{c.dccon}}" style="width:85px; height:85px; margin-top:5px;">`; if (c.comment_img) html += `<br><img src="${{c.comment_img}}" style="margin-top:5px; max-width:200px; border-radius:4px;">`; return html; }} function renderComments() {{ const listArea = document.getElementById('comment-list'); const pageArea = document.getElementById('pagination-buttons'); listArea.innerHTML = ''; pageArea.innerHTML = ''; document.getElementById('total-count').innerText = rawComments.filter(c => !c.text.includes("삭제된 댓글")).length; if (rawComments.length === 0) return; let sortedGroups = [...commentGroups]; if (currentSort === 'new') sortedGroups.reverse(); else if (currentSort === 'reply') sortedGroups.sort((a, b) => b.replies.length - a.replies.length); const totalPages = Math.ceil(sortedGroups.length / commentsPerPage); if (currentPage > totalPages) currentPage = totalPages; if (currentPage < 1) currentPage = 1; const startIndex = (currentPage - 1) * commentsPerPage; const pageGroups = sortedGroups.slice(startIndex, startIndex + commentsPerPage); pageGroups.forEach(g => {{ if (g.parent) {{ const pDiv = document.createElement('div'); pDiv.className = 'comment-row'; if (g.parent.text.includes("삭제된 댓글")) pDiv.innerHTML = `<div class="comment-writer-box"></div><div class="comment-content-box">${{buildContentHTML(g.parent)}}</div><div class="comment-date-box"></div>`; else pDiv.innerHTML = `<div class="comment-writer-box">${{buildWriterHTML(g.parent.writer)}}</div><div class="comment-content-box">${{buildContentHTML(g.parent)}}</div><div class="comment-date-box">${{g.parent.date}}</div>`; listArea.appendChild(pDiv); }} g.replies.forEach(r => {{ const rDiv = document.createElement('div'); rDiv.className = 'comment-row reply-row'; if (r.text.includes("삭제된 댓글")) rDiv.innerHTML = `<div class="comment-writer-box"><span class="reply-icon">ㄴ</span></div><div class="comment-content-box">${{buildContentHTML(r)}}</div><div class="comment-date-box"></div>`; else rDiv.innerHTML = `<div class="comment-writer-box"><span class="reply-icon">ㄴ</span>${{buildWriterHTML(r.writer)}}</div><div class="comment-content-box">${{buildContentHTML(r)}}</div><div class="comment-date-box">${{r.date}}</div>`; listArea.appendChild(rDiv); }}); }}); if (totalPages > 1) {{ for (let i = 1; i <= totalPages; i++) {{ const btn = document.createElement('button'); btn.className = 'page-btn'; if (i === currentPage) btn.classList.add('active'); btn.innerText = i; btn.onclick = () => {{ currentPage = i; renderComments(); window.scrollTo(0, document.getElementById('comment-section').offsetTop - 20); }}; pageArea.appendChild(btn); }} }} }} function changeSort(type) {{ currentSort = type; document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active')); document.getElementById('sort-' + type).classList.add('active'); currentPage = 1; renderComments(); }} function changeLimit(val) {{ commentsPerPage = parseInt(val); currentPage = 1; renderComments(); }} document.querySelectorAll('a[href^="#"]').forEach(anchor => {{ anchor.addEventListener('click', function (e) {{ e.preventDefault(); document.querySelector(this.getAttribute('href')).scrollIntoView({{ behavior: 'smooth' }}); }}); }}); renderComments();</script></body></html>"""
 
+        html_template = apply_comment_parent_grouping(html_template)
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html_template)
         return True
@@ -328,6 +462,7 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
     downvotes = down_el.text.strip() if down_el else "0"
 
     existing_comments_cache = {}
+    old_comments = []
     if update_comments_only and os.path.exists(html_path):
         print(f"🔄 [{post_no}번 글] 기존 이미지 주소 보존 및 초고속 댓글 동기화 중...")
         try:
@@ -362,8 +497,7 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
                         try:
                             old_comments = json.loads(match.group(1))
                             for oc in old_comments:
-                                norm_date = normalize_comment_date(oc.get('date', ''))
-                                key = f"{oc.get('writer', '')}|{oc.get('text', '')}|{norm_date}"
+                                key = make_comment_fallback_key(oc)
                                 existing_comments_cache[key] = {
                                     "dccon": oc.get("dccon", ""),
                                     "comment_img": oc.get("comment_img", "")
@@ -497,6 +631,12 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
                 if isinstance(item_classes, str): item_classes = [item_classes]
                 if any("reply" in c.lower() for c in item_classes if isinstance(c, str)):
                     is_reply = True
+
+            parent_comment_id = ""
+            if is_reply:
+                parent_comment = item.find_parent("li", id=re.compile(r"^comment_"))
+                if parent_comment:
+                    parent_comment_id = parent_comment.get("id", "")
                     
             # vanilla extract nested replies
             for nested_reply in item.find_all("ul"):
@@ -514,6 +654,7 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
             if is_deleted:
                 collected_comments.append({
                     "writer": "", "text": "삭제된 댓글입니다.", "is_reply": is_reply, "dccon": "", "comment_img": "", "date": "",
+                    "comment_id": c_id, "parent_comment_id": parent_comment_id,
                     "raw_dccon": "", "raw_cmt_img": ""
                 })
                 continue
@@ -552,15 +693,34 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
                     
             collected_comments.append({
                 "writer": full_writer, "text": txt, "is_reply": is_reply, "dccon": "", "comment_img": "", "date": normalized_date,
+                "comment_id": c_id, "parent_comment_id": parent_comment_id,
                 "raw_dccon": raw_dccon_src, "raw_cmt_img": comment_img_src
             })
 
+    # 💡 숫자 페이지 버튼뿐 아니라 30페이지 이후의 '다음 페이지 묶음' 버튼도 따라갑니다.
+    # 같은 댓글 페이지가 반복되면 즉시 중단하여 잘못된 버튼 선택으로 인한 무한 루프를 방지합니다.
+    visited_comment_pages = set()
+
     while True:
-        parse_visible_comments(page.content())
+        page_html = page.content()
+        comment_page_ids = tuple(re.findall(r'id=["\'](?:comment|reply)_([^"\']+)', page_html))
+        page_signature = comment_page_ids[:5]
+
+        if page_signature and page_signature in visited_comment_pages:
+            print(f"      ⚠️ 댓글 {current_cmt_page}페이지가 반복되어 안전하게 수집을 종료합니다.")
+            break
+
+        if page_signature:
+            visited_comment_pages.add(page_signature)
+
+        parse_visible_comments(page_html)
+        print(f"      💬 댓글 {current_cmt_page}페이지 수집 완료 (누적 {len(collected_comments)}개)")
+
         next_page_num = current_cmt_page + 1
         page_buttons = page.locator(".cmt_paging a, .comment_numbox a")
         clicked = False
         
+        # 1. 우선 화면에 다음 숫자 버튼이 있으면 기존 방식 그대로 이동합니다.
         for i in range(page_buttons.count()):
             btn = page_buttons.nth(i)
             if btn.inner_text().strip() == str(next_page_num):
@@ -575,12 +735,43 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
                 current_cmt_page = next_page_num
                 clicked = True
                 break
-        if not clicked: break
+
+        # 2. 숫자 버튼이 없으면 30페이지 이후에 나타나는 다음 페이지 묶음 버튼을 찾습니다.
+        if not clicked:
+            next_block_buttons = page.locator(
+                ".cmt_paging a.page_next, "
+                ".comment_numbox a.page_next, "
+                ".cmt_paging a[class*='next'], "
+                ".comment_numbox a[class*='next'], "
+                ".cmt_paging a[title*='다음'], "
+                ".comment_numbox a[title*='다음']"
+            )
+
+            for i in range(next_block_buttons.count()):
+                btn = next_block_buttons.nth(i)
+                try:
+                    if not btn.is_visible():
+                        continue
+
+                    with page.expect_response(lambda r: "comment" in r.url, timeout=5000):
+                        btn.evaluate("node => node.click()")
+                    page.wait_for_timeout(300)
+                except Exception as e:
+                    print(f"      ⚠️ 다음 댓글 묶음 이동 지연, 안전 모드 대기: {e}")
+                    time.sleep(2.0)
+
+                current_cmt_page = next_page_num
+                clicked = True
+                print(f"      ➡️ 댓글 다음 페이지 묶음으로 이동합니다. ({current_cmt_page}페이지)")
+                break
+
+        if not clicked:
+            break
 
     dccon_cache = load_dccon_cache()
     
     for c in collected_comments:
-        cache_key = f"{c['writer']}|{c['text']}|{c['date']}"
+        cache_key = make_comment_fallback_key(c)
         if cache_key in existing_comments_cache:
             c["dccon"] = existing_comments_cache[cache_key].get("dccon", "")
             c["comment_img"] = existing_comments_cache[cache_key].get("comment_img", "")
@@ -646,6 +837,14 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
         if "raw_dccon" in c: del c["raw_dccon"]
         if "raw_cmt_img" in c: del c["raw_cmt_img"]
 
+    if update_comments_only and old_comments:
+        newly_collected_count = len(collected_comments)
+        collected_comments = merge_comments_preserving_existing(old_comments, collected_comments)
+        print(
+            f"      🧩 기존 댓글 {len(old_comments)}개 유지 + 현재 댓글 {newly_collected_count}개 병합 "
+            f"= 보존 댓글 {len(collected_comments)}개"
+        )
+
     # 💡 [추가6] 투표(Poll) 실시간 텍스트 추출 로직 (이미지 캡처는 건드리지 않고 텍스트만 갱신)
     if has_poll or poll_drive_url:
         poll_frame_live = next((f for f in page.frames if "poll" in f.url), None)
@@ -681,14 +880,19 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
 
     html_template = f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{title} - 아카이브</title><style>body {{ font-family: 'Malgun Gothic', sans-serif; margin: 40px; background-color: #f5f6f7; color: #333; }}.container {{ max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}.post-header {{ border-bottom: 1px solid #ccc; padding-bottom: 15px; margin-bottom: 20px; }}.post-title {{ font-size: 22px; font-weight: bold; color: #222; margin-bottom: 12px; }}.post-title a {{ text-decoration: none; color: inherit; }}.post-title a:hover {{ color: #1d4ed8; }}.post-meta-wrap {{ display: flex; justify-content: space-between; font-size: 13px; color: #666; }}.meta-left .writer {{ font-weight: bold; color: #333; margin-right: 10px; }}.comment-jump-btn {{ background: #f3f3f3; border: 1px solid #e1e1e1; border-radius: 15px; padding: 3px 12px; color: #333; text-decoration: none; font-weight: bold; font-size: 12px; }}.content {{ line-height: 1.8; font-size: 16px; margin-top: 30px; padding-bottom: 40px; }}.content img {{ max-width: 100% !important; height: auto !important; display: block; margin: 15px auto; }}.vote-box-container {{ border: 1px solid #ddd; padding: 30px; border-radius: 8px; margin: 40px auto; max-width: 400px; display: flex; justify-content: center; align-items: center; gap: 30px; background: #fff; }}.vote-number {{ font-size: 22px; font-weight: bold; width: 40px; text-align: center; }}.vote-circles {{ display: flex; gap: 15px; }}.circle-btn {{ width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; color: white; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }}.circle-up {{ background: #3b5998; }} .circle-down {{ background: #a5a5a5; }}.comments-header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b5998; padding-bottom: 10px; margin-top: 40px; }}.comments-title {{ font-size: 16px; font-weight: bold; color: #3b5998; }}.control-btn {{ background: none; border: none; font-size: 13px; cursor: pointer; font-weight: bold; color: #999; margin-right: 5px; }}.control-btn.active {{ color: #3b5998; }}.comment-list-area {{ border-top: 1px solid #3b5998; }}.comment-row {{ display: flex; border-bottom: 1px solid #e2e2e2; padding: 12px 0; align-items: flex-start; }}.comment-writer-box {{ width: 160px; flex-shrink: 0; padding: 0 10px; color: #333; font-weight: bold; font-size: 13px; word-break: break-all; }}.comment-writer-box span.ip {{ color: #999; font-weight: normal; font-size: 11px; }}.comment-content-box {{ flex-grow: 1; padding: 0 10px; font-size: 13px; color: #333; word-break: break-all; }}.comment-content-box img {{ max-width: 200px; border-radius: 4px; display: block; margin-top: 5px; }}.comment-date-box {{ width: 100px; flex-shrink: 0; text-align: right; color: #999; font-size: 12px; padding-right: 10px; }}.reply-row {{ background-color: #f9f9f9; padding-left: 0; border-left: 3px solid #ddd; }}.reply-row .comment-writer-box {{ width: 180px; padding-left: 35px; position: relative; }}.reply-icon {{ position: absolute; left: 12px; top: 0; color: #3b5998; font-weight: 900; }}.deleted-text {{ color: #aaa; font-style: normal; }}.pagination {{ display: flex; justify-content: center; gap: 5px; margin-top: 20px; }}.page-btn {{ border: 1px solid #ddd; background: white; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 13px; }}.page-btn.active {{ background: #3b5998; color: white; font-weight: bold; }}@media (max-width: 768px) {{ body {{ margin: 8px; padding: 0; background-color: #fff; }} .container {{ padding: 10px; border-radius: 0; box-shadow: none; }} .post-title {{ font-size: 18px; line-height: 1.4; }} .post-meta-wrap {{ flex-direction: column; gap: 5px; font-size: 11px; }} .comment-row {{ flex-direction: column; padding: 8px 0; }} .comment-writer-box {{ width: 100%; font-size: 12px; margin-bottom: 4px; }} .comment-content-box {{ width: 100%; font-size: 12px; padding: 0; }} .comment-content-box img {{ max-width: 150px; }} .comment-date-box {{ width: 100%; text-align: left; font-size: 10px; margin-top: 4px; }} .reply-row {{ padding-left: 10px; }} .reply-row .comment-writer-box {{ padding-left: 20px; }} .vote-box-container {{ padding: 15px; margin: 20px auto; gap: 15px; max-width: 100%; }} .content div, .content p, .content table, .content tr, .content td, .content span {{ max-width: 100% !important; width: auto !important; height: auto !important; }} }}</style></head><body><div class="container"><div class="post-header"><div class="post-title"><a href="{target_url}" target="_blank" title="디시인사이드 원문 글로 가기">{title} <span style="font-size:14px; color:#1d4ed8; font-weight:normal; margin-left:6px; vertical-align:middle;">🔗 원문 보기</span></a></div><div class="post-meta-wrap"><div class="meta-left"><span class="writer">{writer_top} {ip_top}</span><span class="date">{date_top}</span></div><div class="meta-right"><span>{views_top}</span> | <span>{recommend_top}</span> | <a href="#comment-section" class="comment-jump-btn">{comment_count_top}</a></div></div></div><div class="content">{content_area_html}</div>{poll_section_html}<div class="vote-box-container"><div class="vote-number" style="color:#d31900;">{upvotes}</div><div class="vote-circles"><div class="circle-btn circle-up"><span style="font-size:22px; color:#ffeb3b;">★</span><span>개념</span></div><div class="circle-btn circle-down"><span style="font-size:22px; color:white;">⬇</span><span>비추</span></div></div><div class="vote-number" style="color:#444;">{downvotes}</div></div><div id="comment-section"><div class="comments-header"><div class="comments-title">댓글 <span id="total-count" style="color:#d31900;">0</span>개</div><div class="comment-controls"><button class="control-btn active" id="sort-old" onclick="changeSort('old')">등록순</button><button class="control-btn" id="sort-new" onclick="changeSort('new')">최신순</button><button class="control-btn" id="sort-reply" onclick="changeSort('reply')">답글순</button><select id="limit-select" onchange="changeLimit(this.value)" style="padding: 2px; font-size: 12px; margin-left: 10px;"><option value="30">30개</option><option value="50" selected>50개</option><option value="100">100개</option><option value="9999">전체 보기</option></select></div></div><div class="comment-list-area" id="comment-list"></div><div class="pagination" id="pagination-buttons"></div></div></div><script>const rawComments = {json.dumps(collected_comments, ensure_ascii=False)}; let currentSort = 'old', commentsPerPage = 50, currentPage = 1, commentGroups = [], currentGroup = null; rawComments.forEach(c => {{ if (!c.is_reply) {{ currentGroup = {{ parent: c, replies: [] }}; commentGroups.push(currentGroup); }} else {{ if (currentGroup) currentGroup.replies.push(c); else {{ currentGroup = {{ parent: null, replies: [c] }}; commentGroups.push(currentGroup); }} }} }}); function buildWriterHTML(writerStr) {{ let match = writerStr.match(/(.+)\\s(\\([0-9.]+\\))$/); return match ? `${{match[1]}} <span class="ip">${{match[2]}}</span>` : writerStr; }} function buildContentHTML(c) {{ if (c.text.includes("삭제된 댓글")) return `<span class="deleted-text">${{c.text}}</span>`; let html = c.text.replace(/\\n/g, "<br>"); if (c.dccon) html += `<br><img src="${{c.dccon}}" style="width:85px; height:85px; margin-top:5px;">`; if (c.comment_img) html += `<br><img src="${{c.comment_img}}" style="margin-top:5px; max-width:200px; border-radius:4px;">`; return html; }} function renderComments() {{ const listArea = document.getElementById('comment-list'); const pageArea = document.getElementById('pagination-buttons'); listArea.innerHTML = ''; pageArea.innerHTML = ''; document.getElementById('total-count').innerText = rawComments.filter(c => !c.text.includes("삭제된 댓글")).length; if (rawComments.length === 0) return; let sortedGroups = [...commentGroups]; if (currentSort === 'new') sortedGroups.reverse(); else if (currentSort === 'reply') sortedGroups.sort((a, b) => b.replies.length - a.replies.length); const totalPages = Math.ceil(sortedGroups.length / commentsPerPage); if (currentPage > totalPages) currentPage = totalPages; if (currentPage < 1) currentPage = 1; const startIndex = (currentPage - 1) * commentsPerPage; const pageGroups = sortedGroups.slice(startIndex, startIndex + commentsPerPage); pageGroups.forEach(g => {{ if (g.parent) {{ const pDiv = document.createElement('div'); pDiv.className = 'comment-row'; if (g.parent.text.includes("삭제된 댓글")) pDiv.innerHTML = `<div class="comment-writer-box"></div><div class="comment-content-box">${{buildContentHTML(g.parent)}}</div><div class="comment-date-box"></div>`; else pDiv.innerHTML = `<div class="comment-writer-box">${{buildWriterHTML(g.parent.writer)}}</div><div class="comment-content-box">${{buildContentHTML(g.parent)}}</div><div class="comment-date-box">${{g.parent.date}}</div>`; listArea.appendChild(pDiv); }} g.replies.forEach(r => {{ const rDiv = document.createElement('div'); rDiv.className = 'comment-row reply-row'; if (r.text.includes("삭제된 댓글")) rDiv.innerHTML = `<div class="comment-writer-box"><span class="reply-icon">ㄴ</span></div><div class="comment-content-box">${{buildContentHTML(r)}}</div><div class="comment-date-box"></div>`; else rDiv.innerHTML = `<div class="comment-writer-box"><span class="reply-icon">ㄴ</span>${{buildWriterHTML(r.writer)}}</div><div class="comment-content-box">${{buildContentHTML(r)}}</div><div class="comment-date-box">${{r.date}}</div>`; listArea.appendChild(rDiv); }}); }}); if (totalPages > 1) {{ for (let i = 1; i <= totalPages; i++) {{ const btn = document.createElement('button'); btn.className = 'page-btn'; if (i === currentPage) btn.classList.add('active'); btn.innerText = i; btn.onclick = () => {{ currentPage = i; renderComments(); window.scrollTo(0, document.getElementById('comment-section').offsetTop - 20); }}; pageArea.appendChild(btn); }} }} }} function changeSort(type) {{ currentSort = type; document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active')); document.getElementById('sort-' + type).classList.add('active'); currentPage = 1; renderComments(); }} function changeLimit(val) {{ commentsPerPage = parseInt(val); currentPage = 1; renderComments(); }} document.querySelectorAll('a[href^="#"]').forEach(anchor => {{ anchor.addEventListener('click', function (e) {{ e.preventDefault(); document.querySelector(this.getAttribute('href')).scrollIntoView({{ behavior: 'smooth' }}); }}); }}); renderComments();</script></body></html>"""
 
+    html_template = apply_comment_parent_grouping(html_template)
     with open(html_path, "w", encoding="utf-8") as f: f.write(html_template)
     
+    live_comment_count = int(re.search(r"\d+", comment_count_top).group()) if re.search(r"\d+", comment_count_top) else len(collected_comments)
+
     post_meta = {
         "title": title,
         "date": date_top,
         "views": views_val,
         "recommend": recommend_val,
         "comment_count": len(collected_comments),
+        "live_comment_count": live_comment_count,
+        "comment_id_version": 1,
         "image_count": image_count,
         "thumbnail": thumbnail_url,
         "has_poll": bool(poll_drive_url or has_poll or poll_text_html) # 💡 꼬리표 추가
@@ -781,15 +985,30 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
                         continue
 
                     if is_completed:
-                        saved_cmt_count = completed_posts[post_no].get("comment_count", 0)
-                        if current_cmt_count <= saved_cmt_count: 
+                        # 💡 보존 댓글 수가 아니라 마지막 원문 댓글 수를 비교합니다.
+                        # 기존 체크포인트에는 live_comment_count가 없으므로 최초 1회는 comment_count를 대신 사용합니다.
+                        saved_cmt_count = completed_posts[post_no].get(
+                            "live_comment_count",
+                            completed_posts[post_no].get("comment_count", 0)
+                        )
+                        has_comment_ids = (
+                            completed_posts[post_no].get("comment_id_version") == 1
+                            or saved_post_has_comment_ids(post_no)
+                        )
+                        if current_cmt_count == saved_cmt_count and has_comment_ids:
                             print(f"   └─ [{post_no}번] 이미 수집됨 (댓글 변동 없음: {current_cmt_count}개) [인스펙션 누적: {archive_count}/{max_p}]")
                             continue
+
+                        if current_cmt_count == saved_cmt_count:
+                            print(f"\n▶ [{post_no}번] 기존 댓글 ID가 없어 최초 1회 답글 관계 갱신 시작...")
+                        else:
+                            print(f"\n▶ [{post_no}번] 댓글 수 변동 감지 (기존 원문 {saved_cmt_count}개 -> 현재 원문 {current_cmt_count}개) 병합 시작...")
                         
-                        print(f"\n▶ [{post_no}번] 새 댓글 감지 (기존 {saved_cmt_count}개 -> 현재 {current_cmt_count}개) 갱신 시작...")
                         success, post_meta = archive_single_post(post_no, post_page, drive_service, creds, folder_id, update_comments_only=True)
                         if success: 
-                            completed_posts[post_no]["comment_count"] = current_cmt_count
+                            completed_posts[post_no]["comment_count"] = post_meta["comment_count"]
+                            completed_posts[post_no]["live_comment_count"] = current_cmt_count
+                            completed_posts[post_no]["comment_id_version"] = 1
                             completed_posts[post_no]["views"] = post_meta["views"]       # 💡 이 줄 추가
                             completed_posts[post_no]["recommend"] = post_meta["recommend"] # 💡 이 줄 추가
                             poll_msg = " 투표 동기화 완료!" if post_meta.get("has_poll") else ""
