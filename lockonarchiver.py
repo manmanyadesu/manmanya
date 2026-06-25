@@ -11,7 +11,7 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 🎯 수집하고 싶은 디시인사이드 글 번호 또는 주소 링크를 여기에 "줄바꿈(Enter)"으로 붙여넣어 주세요!
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1776473
+https://gall.dcinside.com/board/view/?id=comic_new6&no=4753342#focus_cmt
 
 """
 
