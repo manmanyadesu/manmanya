@@ -17,9 +17,6 @@ https://gall.dcinside.com/comic_new4/8723000
 https://gall.dcinside.com/board/view/?id=comic_new4&no=8898455
 https://gall.dcinside.com/comic_new4/8981609
 https://gall.dcinside.com/comic_new4/9093680
-https://gall.dcinside.com/board/view/?id=comic_new6&no=175603&page=1
-https://gall.dcinside.com/mgallery/board/view/?id=yohukashinouta&no=18065
-
 
 """
 
