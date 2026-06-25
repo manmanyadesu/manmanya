@@ -246,15 +246,20 @@
                     const body = iframeDocument.body;
                     if (!html || !body) return;
 
-                    // 이전 iframe 높이가 scrollHeight 계산을 부풀리지 않도록 잠시 최소화합니다.
-                    iframe.style.height = '1px';
+                    // ⚠️ iframe을 순간적으로 1px로 줄이면 바깥 화면도 맨 위로 튀므로
+                    // 실제 게시물 컨테이너의 끝 위치를 직접 계산해 높이만 조용히 갱신합니다.
+                    const contentContainer = iframeDocument.querySelector('.container');
+                    const bodyStyle = iframeDocument.defaultView.getComputedStyle(body);
+                    const bodyMarginBottom = parseFloat(bodyStyle.marginBottom) || 0;
 
-                    const contentHeight = Math.max(
-                        html.scrollHeight,
-                        html.offsetHeight,
-                        body.scrollHeight,
-                        body.offsetHeight
-                    );
+                    const contentHeight = contentContainer
+                        ? contentContainer.offsetTop + contentContainer.offsetHeight + bodyMarginBottom
+                        : Math.max(
+                            html.scrollHeight,
+                            html.offsetHeight,
+                            body.scrollHeight,
+                            body.offsetHeight
+                        );
 
                     iframe.style.height = Math.max(contentHeight + 4, window.innerHeight) + 'px';
                     resizeFrameId = null;
@@ -268,7 +273,8 @@
                 const iframeTop = iframe.getBoundingClientRect().top + window.scrollY;
                 window.scrollTo({
                     top: iframeTop + commentSection.offsetTop - 20,
-                    behavior: 'smooth'
+                    // 페이지를 누를 때 긴 애니메이션 없이 댓글 위치를 한 번만 맞춥니다.
+                    behavior: 'auto'
                 });
             }
 
@@ -296,24 +302,26 @@
                 }
             });
 
-            // 댓글 페이지와 정렬을 바꾼 뒤 높이와 바깥 스크롤 위치를 다시 맞춥니다.
+            // 댓글 렌더링 버튼을 누르면 높이만 다시 계산합니다.
+            // 페이지 버튼만 기존 동작처럼 댓글창 위쪽으로 이동하고,
+            // 등록순·최신순·답글순은 현재 화면 위치를 그대로 유지합니다.
             iframeDocument.addEventListener('click', function (event) {
                 const target = event.target.closest('.page-btn, .control-btn, .comment-jump-btn');
                 if (!target) return;
 
                 setTimeout(function () {
                     syncIframeHeight();
-                    if (target.matches('.page-btn, .control-btn')) {
+                    if (target.matches('.page-btn')) {
                         scrollToCommentSection();
                     }
                 }, 0);
             });
 
+            // 댓글 표시 개수 변경은 높이만 다시 계산하고 화면 위치는 움직이지 않습니다.
             iframeDocument.addEventListener('change', function (event) {
                 if (event.target && event.target.id === 'limit-select') {
                     setTimeout(function () {
                         syncIframeHeight();
-                        scrollToCommentSection();
                     }, 0);
                 }
             });
