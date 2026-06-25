@@ -11,12 +11,14 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 🎯 수집하고 싶은 디시인사이드 글 번호 또는 주소 링크를 여기에 "줄바꿈(Enter)"으로 붙여넣어 주세요!
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
-https://gall.dcinside.com/board/view/?id=comic_new4&no=8485839&page=1
-https://gall.dcinside.com/board/view/?id=comic_new4&no=8602203&page=1
+
 https://gall.dcinside.com/comic_new4/8723000
-https://gall.dcinside.com/board/view/?id=comic_new4&no=8898455
 https://gall.dcinside.com/comic_new4/8981609
 https://gall.dcinside.com/comic_new4/9093680
+
+
+
+
 
 """
 
@@ -1032,6 +1034,15 @@ def parse_dc_url(url_or_num):
     path_match = re.search(r"/board/([a-zA-Z0-9_]+)/(\d+)", url_or_num)
     if path_match:
         return path_match.group(1), path_match.group(2)
+
+    # Case 4: 디시 단축 주소 (https://gall.dcinside.com/갤ID/글번호)
+    # 예: https://gall.dcinside.com/comic_new4/8723000
+    short_path_match = re.search(
+        r"(?:https?://)?(?:www\.)?gall\.dcinside\.com/([a-zA-Z0-9_]+)/(\d+)(?:[/?#].*)?$",
+        url_or_num
+    )
+    if short_path_match:
+        return short_path_match.group(1), short_path_match.group(2)
         
     # 기타 예외적 마이너 갤러리 파싱 대조군 추가
     gall_match = re.search(r"[?&]id=([a-zA-Z0-9_]+)", url_or_num)

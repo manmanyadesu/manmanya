@@ -8208,5 +8208,53 @@
         "image_count": 19,
         "thumbnail": "https://lh3.googleusercontent.com/d/1wbLYUF6GOGrJ8V2nTTDltp3tdPYYA606",
         "has_poll": false
+    },
+    "comic_new4_8723000": {
+        "comment_count": 95,
+        "gallery_id": "comic_new4",
+        "post_no": "8723000",
+        "archive_key": "comic_new4_8723000",
+        "title": "번역) 철야의 노래 외전 - 낙원편 3화",
+        "date": "2025.07.16 02:39:02",
+        "views": 12952,
+        "recommend": 132,
+        "live_comment_count": 93,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 16,
+        "thumbnail": "https://lh3.googleusercontent.com/d/1AhIX0JbTjby71eZ2g9hPsoFv5bCKtefE",
+        "has_poll": false
+    },
+    "comic_new4_8981609": {
+        "comment_count": 111,
+        "gallery_id": "comic_new4",
+        "post_no": "8981609",
+        "archive_key": "comic_new4_8981609",
+        "title": "번역) 철야의 노래 외전 - 낙원편 5화",
+        "date": "2025.07.30 17:43:06",
+        "views": 11014,
+        "recommend": 145,
+        "live_comment_count": 109,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 16,
+        "thumbnail": "https://lh3.googleusercontent.com/d/1upfuUKUVvnuJvR0UY24dYlNZErCRWQB9",
+        "has_poll": false
+    },
+    "comic_new4_9093680": {
+        "comment_count": 119,
+        "gallery_id": "comic_new4",
+        "post_no": "9093680",
+        "archive_key": "comic_new4_9093680",
+        "title": "번역) 철야의 노래 외전 - 낙원편 6화 (능배물)",
+        "date": "2025.08.06 03:30:51",
+        "views": 12132,
+        "recommend": 153,
+        "live_comment_count": 118,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 20,
+        "thumbnail": "https://lh3.googleusercontent.com/d/1m2GMmNl6czXSYBbb7Es-5_eI89LtrqtQ",
+        "has_poll": false
     }
 }
