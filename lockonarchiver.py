@@ -14,7 +14,9 @@ TARGET_LINKS_RAW = """
 
 
 
-
+https://gall.dcinside.com/board/view/?id=majak&no=71105
+https://gall.dcinside.com/board/view/?id=majak&no=71107
+https://gall.dcinside.com/board/view/?id=majak&no=71114
 
 
 """

@@ -9247,5 +9247,37 @@
         "image_count": 15,
         "thumbnail": "https://lh3.googleusercontent.com/d/1Ta2ywqaTGJ9kP6-OKnAIGsWvKQGhzl7f",
         "has_poll": false
+    },
+    "majak_71105": {
+        "comment_count": 15,
+        "gallery_id": "majak",
+        "post_no": "71105",
+        "archive_key": "majak_71105",
+        "title": "헛쯔모 없는 개혁 1권 - 1화",
+        "date": "2013.11.14 19:50:05",
+        "views": 21256,
+        "recommend": 12,
+        "live_comment_count": 14,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 26,
+        "thumbnail": "https://lh3.googleusercontent.com/d/1NWkOegzGV0xGAQLBK7pDOscC2DxHAtcs",
+        "has_poll": false
+    },
+    "majak_71107": {
+        "comment_count": 13,
+        "gallery_id": "majak",
+        "post_no": "71107",
+        "archive_key": "majak_71107",
+        "title": "헛쯔모 없는 개혁 1권 - 2화",
+        "date": "2013.11.14 20:09:31",
+        "views": 8228,
+        "recommend": 8,
+        "live_comment_count": 12,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 26,
+        "thumbnail": "https://lh3.googleusercontent.com/d/12gap-79atPDbILJIGs371e6-CAviVi3B",
+        "has_poll": false
     }
 }
