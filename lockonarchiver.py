@@ -15,6 +15,9 @@ TARGET_LINKS_RAW = """
 https://gall.dcinside.com/board/view/?id=comic_new3&no=1230966&exception_mode=recommend&page=171
 https://gall.dcinside.com/board/view/?id=comic_new3&no=924219
 https://gall.dcinside.com/board/view/?id=comic_new3&no=984671
+
+https://gall.dcinside.com/board/view/?id=comic_new1&no=9959948#focus_cmt
+
 """
 
 # 💡 RAW 문자열로부터 리스트를 분리 가로채 메모리에 할당 (NameError 방지)
