@@ -16953,5 +16953,37 @@
         "image_count": 50,
         "thumbnail": "https://lh3.googleusercontent.com/d/1aXtmX8ydVCPZgv3STPdUwi_J742PgW9e",
         "has_poll": false
+    },
+    "comic_new3_8764592": {
+        "comment_count": 52,
+        "gallery_id": "comic_new3",
+        "post_no": "8764592",
+        "archive_key": "comic_new3_8764592",
+        "title": "번역) 광년이의 사랑 15화 (이세계 트럭)",
+        "date": "2023.02.22 00:02:13",
+        "views": 8215,
+        "recommend": 68,
+        "live_comment_count": 51,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 30,
+        "thumbnail": "https://lh3.googleusercontent.com/d/1TrbEV6ND3Lji14ZFIBcFVXwt9OrxOdDH",
+        "has_poll": false
+    },
+    "comic_new3_6722895": {
+        "comment_count": 52,
+        "gallery_id": "comic_new3",
+        "post_no": "6722895",
+        "archive_key": "comic_new3_6722895",
+        "title": "번역) 광년이의 사랑 14화 (크레이지싸이코레즈)",
+        "date": "2022.11.09 20:37:48",
+        "views": 4398,
+        "recommend": 88,
+        "live_comment_count": 50,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 32,
+        "thumbnail": "https://lh3.googleusercontent.com/d/1HYk2Umdc_nOSbYS_U8xDeRPWA3i7Jbz4",
+        "has_poll": false
     }
 }

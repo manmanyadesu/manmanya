@@ -12,22 +12,8 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
 
-
-https://gall.dcinside.com/board/view/?id=comic_new3&no=6687288
-https://gall.dcinside.com/board/view/?id=comic_new3&no=6687242
-https://gall.dcinside.com/board/view/?id=comic_new3&no=4173734
-https://gall.dcinside.com/board/view/?id=comic_new3&no=3764205
-https://gall.dcinside.com/board/view/?id=comic_new3&no=3663943
-https://gall.dcinside.com/board/view/?id=comic_new3&no=3578664
-https://gall.dcinside.com/board/view/?id=comic_new3&no=3504670
-https://gall.dcinside.com/board/view/?id=comic_new3&no=3504670
-https://gall.dcinside.com/board/view/?id=comic_new3&no=2549071
-https://gall.dcinside.com/board/view/?id=comic_new3&no=2494449
-https://gall.dcinside.com/board/view/?id=comic_new3&no=2466542
-https://gall.dcinside.com/board/view?id=comic_new3&no=2422866
-https://m.dcinside.com/board/comic_new3/2403611
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1162421&exception_mode=recommend&page=172
-
+https://gall.dcinside.com/board/view/?id=comic_new3&no=8764592
+https://gall.dcinside.com/board/view/?id=comic_new3&no=6722895
 
 
 """
