@@ -11,47 +11,24 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 🎯 수집하고 싶은 디시인사이드 글 번호 또는 주소 링크를 여기에 "줄바꿈(Enter)"으로 붙여넣어 주세요!
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
-https://gall.dcinside.com/board/view/?id=comic_new3&no=878094&exception_mode=recommend&page=176#focus_cmt
-https://gall.dcinside.com/board/view/?id=comic_new3&no=808149
-https://gall.dcinside.com/board/view/?id=comic_new3&no=770766
-https://gall.dcinside.com/board/view/?id=comic_new3&no=739061
-https://gall.dcinside.com/mgallery/board/view/?id=comics&no=256919
-https://gall.dcinside.com/board/view/?id=comic_new3&no=725191
-https://gall.dcinside.com/board/view/?id=comic_new3&no=706325
-https://gall.dcinside.com/board/view/?id=comic_new3&no=693949
-https://gall.dcinside.com/board/view/?id=comic_new3&no=7877481#focus_cmt
-https://gall.dcinside.com/board/view/?id=comic_new1&no=9959948#focus_cmt
-https://gall.dcinside.com/board/view/?id=comic_new3&no=4623183#focus_cmt
-https://gall.dcinside.com/board/view?id=comic_new3&no=11157564#focus_cmt
-https://m.dcinside.com/board/comic_new3/10594877
-https://m.dcinside.com/board/comic_new3/10427703
-https://gall.dcinside.com/board/view/?id=comic_new3&no=8815470
-https://gall.dcinside.com/board/view/?id=comic_new3&no=2342893&exception_mode=recommend&page=158
-https://gall.dcinside.com/board/view/?id=comic_new3&no=4346497&exception_mode=recommend&page=135
-https://gall.dcinside.com/board/view/?id=comic_new3&no=2315608
-https://gall.dcinside.com/board/view/?id=comic_new3&no=2297141
-https://gall.dcinside.com/board/view/?id=comic_new3&no=2252046
-https://gall.dcinside.com/board/view/?id=comic_new3&no=2247287
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1779649
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1624379&exception_mode=recommend&page=166
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1509762&exception_mode=recommend&page=168
-https://gall.dcinside.com/mgallery/board/view?id=comics&no=182690
-https://gall.dcinside.com/mgallery/board/view?id=comics&no=182690
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1213229
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1160021
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1156455
 
 
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1128550
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1112277
-https://gall.dcinside.com/board/view?id=comic_new3&no=1046076
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1033423
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1015365
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1004819
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1004819
-https://gall.dcinside.com/board/view/?id=comic_new3&no=957458
-https://gall.dcinside.com/board/view/?id=comic_new3&no=957458
-https://gall.dcinside.com/board/view/?id=comic_new3&no=921833
+https://gall.dcinside.com/board/view/?id=comic_new3&no=6687288
+https://gall.dcinside.com/board/view/?id=comic_new3&no=6687242
+https://gall.dcinside.com/board/view/?id=comic_new3&no=4173734
+https://gall.dcinside.com/board/view/?id=comic_new3&no=3764205
+https://gall.dcinside.com/board/view/?id=comic_new3&no=3663943
+https://gall.dcinside.com/board/view/?id=comic_new3&no=3578664
+https://gall.dcinside.com/board/view/?id=comic_new3&no=3504670
+https://gall.dcinside.com/board/view/?id=comic_new3&no=3504670
+https://gall.dcinside.com/board/view/?id=comic_new3&no=2549071
+https://gall.dcinside.com/board/view/?id=comic_new3&no=2494449
+https://gall.dcinside.com/board/view/?id=comic_new3&no=2466542
+https://gall.dcinside.com/board/view?id=comic_new3&no=2422866
+https://m.dcinside.com/board/comic_new3/2403611
+https://gall.dcinside.com/board/view/?id=comic_new3&no=1162421&exception_mode=recommend&page=172
+
+
 
 """
 
