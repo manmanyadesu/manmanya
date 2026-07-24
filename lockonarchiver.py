@@ -12,11 +12,9 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
 
-https://gall.dcinside.com/board/view/?id=comic_new3&no=1230966&exception_mode=recommend&page=171
-https://gall.dcinside.com/board/view/?id=comic_new3&no=924219
-https://gall.dcinside.com/board/view/?id=comic_new3&no=984671
 
-https://gall.dcinside.com/board/view/?id=comic_new1&no=9959948#focus_cmt
+
+
 
 """
 
