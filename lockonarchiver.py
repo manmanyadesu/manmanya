@@ -13,54 +13,14 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 TARGET_LINKS_RAW = """
 
 https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14375&exception_mode=recommend&page=6
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14405&exception_mode=recommend&page=6
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14444&exception_mode=recommend&page=6
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14465&exception_mode=recommend&page=6
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14508&exception_mode=recommend&page=6
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14540&exception_mode=recommend&page=6
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14570&exception_mode=recommend&page=6
 
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14604&exception_mode=recommend&page=6
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14640&exception_mode=recommend&page=6
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14685&exception_mode=recommend&page=6
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14745&exception_mode=recommend&page=5
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14776&exception_mode=recommend&page=5
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14792&exception_mode=recommend&page=5
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14805&exception_mode=recommend&page=5
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14832&exception_mode=recommend&page=5
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14844&exception_mode=recommend&page=5
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14875&exception_mode=recommend&page=5
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14902&exception_mode=recommend&page=5
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14951&exception_mode=recommend&page=4
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=14971&exception_mode=recommend&page=4
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15021&exception_mode=recommend&page=4
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15170&exception_mode=recommend&page=4
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15275&exception_mode=recommend&page=3
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15334&exception_mode=recommend&page=3
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15515&exception_mode=recommend&page=1
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15596&exception_mode=recommend&page=1
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15637&exception_mode=recommend&page=1
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15713&exception_mode=recommend&page=1
-
-https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15176&exception_mode=recommend&page=4
-
+https://gall.dcinside.com/mgallery/board/view/?id=saki&no=15190&exception_mode=recommend&page=4
 
 """
 
 # 💡 RAW 문자열로부터 리스트를 분리 가로채 메모리에 할당 (NameError 방지)
 TARGET_LINKS = [line.strip() for line in TARGET_LINKS_RAW.strip().split('\n') if line.strip() and not line.strip().startswith("#")]
+
 
 # 구글 드라이브 및 로컬 백업 경로 설정 (기존 스크립트와 데이터베이스 공유)
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
