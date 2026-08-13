@@ -12,53 +12,13 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
 
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1924120
-https://gall.dcinside.com/board/view/?id=comic_new2&no=8888199
-https://gall.dcinside.com/board/view/?id=comic_new2&no=8906521
-https://gall.dcinside.com/board/view/?id=comic_new2&no=8960795
-https://gall.dcinside.com/board/view/?id=comic_new2&no=8961122
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=463900
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=463936
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=469365
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=471039
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=473468
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=477443
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=482990
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=486763
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=490221
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=493206
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=498907
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=505825
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=506632
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=548311
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=579055
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=595157
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=616510
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=671560
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=685703
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=697809
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=734360
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=741804
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=872902
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=960420
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=976943
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1003754
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1063247
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1160333
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1172355
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1465476
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1582090
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1589087
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1591419
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1780210
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1864683
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1885934
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=2037782
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=2140548
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=2287213
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=2296975
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=2321070
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=2446372
+https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1922297
+https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1922393
+https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1922435
+https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1922914
+https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1923456
+https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1780171
+
 
 """
 
