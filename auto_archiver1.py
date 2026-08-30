@@ -3,7 +3,7 @@
 # ==============================================================================
 GALLERY_ID = "comic_new6"               # 디시인사이드 갤러리 ID
 START_PAGE = 1                          # 기본 시작 페이지
-END_PAGE = 2                            # 기본 종료 페이지
+END_PAGE = 1                            # 기본 종료 페이지
 MAX_POSTS_TO_ARCHIVE = 0               # 기본 최대 수집 수량 (0 이면 제한 없음)
 
 # 🚀 [템플릿 디자인 초고속 갱신용 토글]
@@ -1061,9 +1061,40 @@ def run_archiver_logic(start_p, end_p, max_p, force_nos_str, force_template_rebu
             browser.close()
             
             print("\n🚀 데이터 GitHub Pages 배포 시도 중...")
-            subprocess.run("git add .", shell=True)
-            subprocess.run('git commit -m "Auto Update: Fast Sync & Inspection Limit Applied"', shell=True)
-            subprocess.run("git push", shell=True)
+
+            def run_git_command(cmd, allow_no_changes=False):
+                result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+                stdout_text = (result.stdout or "").strip()
+                stderr_text = (result.stderr or "").strip()
+                combined_text = f"{stdout_text}\n{stderr_text}".strip()
+
+                if stdout_text:
+                    print(stdout_text)
+                if stderr_text:
+                    print(stderr_text)
+
+                # git commit은 변경사항이 없으면 returncode가 1로 나올 수 있습니다.
+                # 이 경우는 배포 실패가 아니라 "올릴 새 변경사항 없음"으로 처리합니다.
+                if allow_no_changes and result.returncode != 0:
+                    no_change_messages = [
+                        "nothing to commit",
+                        "no changes added to commit",
+                        "working tree clean",
+                        "커밋할 사항 없음",
+                        "변경 사항 없음"
+                    ]
+                    if any(msg in combined_text.lower() for msg in no_change_messages):
+                        print("   └─ Git 커밋할 새 변경사항 없음. push 확인으로 넘어갑니다.")
+                        return result
+
+                if result.returncode != 0:
+                    raise RuntimeError(f"Git 명령 실패: {cmd}")
+
+                return result
+
+            run_git_command("git add .")
+            run_git_command('git commit -m "Auto Update: Fast Sync & Inspection Limit Applied"', allow_no_changes=True)
+            run_git_command("git push")
             print("🎉 배포가 완전히 완료되었습니다!")
 
 if __name__ == "__main__":
