@@ -1172,9 +1172,40 @@ def run_direct_archiver():
         browser.close()
         
         print("\n🚀 데이터 GitHub Pages 배포 시도 중...")
-        subprocess.run("git add .", shell=True)
-        subprocess.run('git commit -m "Auto Update: Direct Targets Sync Applied"', shell=True)
-        subprocess.run("git push", shell=True)
+
+        def run_git_command(cmd, allow_no_changes=False):
+            result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+            stdout_text = (result.stdout or "").strip()
+            stderr_text = (result.stderr or "").strip()
+            combined_text = f"{stdout_text}\n{stderr_text}".strip()
+
+            if stdout_text:
+                print(stdout_text)
+            if stderr_text:
+                print(stderr_text)
+
+            # git commit은 변경사항이 없으면 returncode가 1로 나올 수 있습니다.
+            # 이 경우는 배포 실패가 아니라 "올릴 새 변경사항 없음"으로 처리합니다.
+            if allow_no_changes and result.returncode != 0:
+                no_change_messages = [
+                    "nothing to commit",
+                    "no changes added to commit",
+                    "working tree clean",
+                    "커밋할 사항 없음",
+                    "변경 사항 없음"
+                ]
+                if any(msg in combined_text.lower() for msg in no_change_messages):
+                    print("   └─ Git 커밋할 새 변경사항 없음. push 확인으로 넘어갑니다.")
+                    return result
+
+            if result.returncode != 0:
+                raise RuntimeError(f"Git 명령 실패: {cmd}")
+
+            return result
+
+        run_git_command("git add .")
+        run_git_command('git commit -m "Auto Update: Direct Targets Sync Applied"', allow_no_changes=True)
+        run_git_command("git push")
         print("🎉 배포가 완전히 완료되었습니다!")
 
 if __name__ == "__main__":
