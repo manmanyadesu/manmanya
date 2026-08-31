@@ -41,6 +41,13 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 
+# 🛡️ [Git 배포 오류 단계적 처리 설정]
+# Git 배포가 1~2회 실패하면 오류만 표시하고 다음 일반 수집을 허용합니다.
+# 3회 연속 실패하면 다음 실행에서 새 수집 전에 미배포 자료의 Git 복구를 먼저 시도합니다.
+# 오류 기록은 .git 내부에만 저장되므로 GitHub Pages와 구글 드라이브에는 올라가지 않습니다.
+GIT_DEPLOY_STATE_FILE = os.path.join(current_dir, ".git", "archiver_deploy_state.json")
+GIT_DEPLOY_FAILURE_LIMIT = 3
+
 import re
 import time
 import json
@@ -66,6 +73,32 @@ from google.auth.transport.requests import Request
 
 socket.setdefaulttimeout(15)
 os.makedirs(BASE_DIR, exist_ok=True)
+
+# 중복 실행 방지용 락 시스템
+# auto_archiver1.py와 같은 락 파일을 사용하여 크롤링뿐 아니라 Git 배포까지 서로 겹치지 않게 합니다.
+if os.path.exists(LOCK_FILE):
+    try:
+        with open(LOCK_FILE, "r") as f:
+            old_pid = int(f.read().strip())
+        is_running = False
+        try:
+            out = subprocess.check_output(f'tasklist /FI "PID eq {old_pid}"', shell=True, stderr=subprocess.DEVNULL)
+            out_str = out.decode('utf-8', errors='ignore') + out.decode('cp949', errors='ignore')
+            for line in out_str.splitlines():
+                if str(old_pid) in line:
+                    is_running = True
+                    break
+        except Exception: is_running = False
+        if is_running:
+            print(f"⚠️ 이미 다른 크롤러 인스턴스(PID: {old_pid})가 작동 중입니다. 실행을 중단합니다.")
+            exit()
+        else:
+            os.remove(LOCK_FILE)
+    except Exception:
+        try: os.remove(LOCK_FILE)
+        except Exception: pass
+
+with open(LOCK_FILE, "w") as f: f.write(str(os.getpid()))
 
 # 💡 [보완] NameError 방지를 위해 archive_single_post가 완벽하게 호출할 수 있는 페이징 내장 템플릿 함수 정의
 def get_html_template(title, target_url, writer_top, ip_top, date_top, views_top, recommend_top, comment_count_top, content_area_html, poll_section_html, upvotes, downvotes, comments_json_str):
@@ -152,6 +185,141 @@ def release_lock():
     if os.path.exists(LOCK_FILE):
         try: os.remove(LOCK_FILE)
         except Exception: pass
+
+# ==============================================================================
+# [ GitHub Pages 배포 출력 및 단계적 오류 처리 ]
+# - Git 출력은 명령이 끝날 때까지 숨기지 않고 실시간으로 표시합니다.
+# - 1~2회 배포 실패는 수집 결과를 보존하고 다음 일반 수집을 허용합니다.
+# - 3회 누적 후에는 다음 실행에서 Git 복구를 먼저 시도하며, 복구 실패 시에만 새 수집을 중단합니다.
+# - auto_archiver1.py와 lockonarchiver.py는 같은 Git 저장소를 사용하므로 오류 횟수도 공유합니다.
+# ==============================================================================
+def load_git_deploy_state():
+    if os.path.exists(GIT_DEPLOY_STATE_FILE):
+        try:
+            with open(GIT_DEPLOY_STATE_FILE, "r", encoding="utf-8") as f:
+                state = json.load(f)
+                if isinstance(state, dict):
+                    return state
+        except Exception:
+            pass
+    return {"consecutive_failures": 0}
+
+def save_git_deploy_failure(error_text):
+    state = load_git_deploy_state()
+    failure_count = int(state.get("consecutive_failures", 0)) + 1
+    state = {
+        "consecutive_failures": failure_count,
+        "last_error": str(error_text),
+        "updated_at": datetime.datetime.now().isoformat(timespec="seconds")
+    }
+    try:
+        with open(GIT_DEPLOY_STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(state, f, ensure_ascii=False, indent=4)
+    except Exception as state_error:
+        print(f"⚠️ Git 배포 오류 횟수 기록 실패: {state_error}")
+    return failure_count
+
+def clear_git_deploy_failure():
+    if os.path.exists(GIT_DEPLOY_STATE_FILE):
+        try:
+            os.remove(GIT_DEPLOY_STATE_FILE)
+        except Exception as state_error:
+            print(f"⚠️ Git 배포 오류 횟수 초기화 실패: {state_error}")
+
+def run_git_command(cmd, allow_no_changes=False):
+    print(f"\n> {cmd}")
+
+    # capture_output=True를 사용하지 않고 stdout·stderr를 합쳐 실시간으로 표시합니다.
+    # 출력은 동시에 메모리에 보관하여 returncode가 0인 Git 내부 정리 오류도 확인합니다.
+    process = subprocess.Popen(
+        cmd,
+        shell=True,
+        text=True,
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1
+    )
+
+    output_lines = []
+    for line in process.stdout:
+        output_lines.append(line)
+        print(line, end="", flush=True)
+
+    return_code = process.wait()
+    combined_text = "".join(output_lines)
+    combined_lower = combined_text.lower()
+
+    # 일부 Git 자동정리 오류는 push가 성공하여 returncode가 0이어도 출력에만 나타납니다.
+    # 실제로 발생했던 오류 문구를 별도로 검사하여 배포 성공으로 잘못 판단하지 않습니다.
+    maintenance_error_messages = [
+        "could not write multi-pack-index",
+        "failed to perform geometric repack",
+        "unable to find all commit-graph files",
+        "task 'geometric-repack' failed"
+    ]
+    found_error = next((msg for msg in maintenance_error_messages if msg in combined_lower), None)
+    if found_error:
+        raise RuntimeError(f"Git 내부 정리 오류 감지: {found_error}")
+
+    # git commit은 변경사항이 없으면 returncode가 1로 나올 수 있습니다.
+    # 이 경우는 배포 실패가 아니라 "올릴 새 변경사항 없음"으로 처리합니다.
+    if allow_no_changes and return_code != 0:
+        no_change_messages = [
+            "nothing to commit",
+            "no changes added to commit",
+            "working tree clean",
+            "커밋할 사항 없음",
+            "변경 사항 없음"
+        ]
+        if any(msg in combined_lower for msg in no_change_messages):
+            print("   └─ Git 커밋할 새 변경사항 없음. push 확인으로 넘어갑니다.")
+            return combined_text
+
+    if return_code != 0:
+        raise RuntimeError(f"Git 명령 실패(returncode={return_code}): {cmd}")
+
+    return combined_text
+
+def deploy_github_pages(commit_message):
+    print("\n🚀 데이터 GitHub Pages 배포 시도 중...")
+    try:
+        run_git_command("git add .")
+        run_git_command(f'git commit -m "{commit_message}"', allow_no_changes=True)
+        run_git_command("git push")
+        clear_git_deploy_failure()
+        print("🎉 배포가 완전히 완료되었습니다!")
+        return True
+    except Exception as deploy_error:
+        failure_count = save_git_deploy_failure(deploy_error)
+        print(f"❌ GitHub Pages 배포 실패 ({failure_count}/{GIT_DEPLOY_FAILURE_LIMIT}회 연속): {deploy_error}")
+        print("   └─ 이번 실행에서 완료된 로컬 저장과 구글 드라이브 저장은 그대로 유지됩니다.")
+
+        if failure_count < GIT_DEPLOY_FAILURE_LIMIT:
+            print("   └─ 일시적인 오류일 수 있으므로 다음 실행의 일반 수집은 계속 허용합니다.")
+        else:
+            print("🛑 연속 배포 오류가 기준에 도달했습니다.")
+            print("   └─ 다음 실행에서는 새 크롤링보다 현재 미배포 자료의 Git 복구를 먼저 시도합니다.")
+        return False
+
+def recover_git_before_crawl_if_needed():
+    state = load_git_deploy_state()
+    failure_count = int(state.get("consecutive_failures", 0))
+    if failure_count < GIT_DEPLOY_FAILURE_LIMIT:
+        return True
+
+    print("\n============================================================")
+    print(f"🛠️ Git 배포가 {failure_count}회 연속 실패하여 자동 복구를 먼저 시도합니다.")
+    print("   새 글을 더 수집하기 전에 현재 로컬의 미배포 자료부터 GitHub에 다시 올립니다.")
+    print("============================================================")
+
+    if deploy_github_pages("Auto Recovery: Pending Archive Deployment"):
+        print("✅ Git 자동 복구 성공. 이제 평소 크롤링을 계속합니다.")
+        return True
+
+    print("🛑 Git 자동 복구가 다시 실패하여 이번 실행의 새 크롤링은 시작하지 않습니다.")
+    print("   기존 로컬·구글 드라이브·GitHub 자료는 삭제하거나 되돌리지 않았습니다.")
+    return False
 
 def get_or_create_drive_folder(drive_service, folder_name="Manga_Archive"):
     query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -1171,47 +1339,21 @@ def run_direct_archiver():
                 
         browser.close()
         
-        print("\n🚀 데이터 GitHub Pages 배포 시도 중...")
-
-        def run_git_command(cmd, allow_no_changes=False):
-            result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
-            stdout_text = (result.stdout or "").strip()
-            stderr_text = (result.stderr or "").strip()
-            combined_text = f"{stdout_text}\n{stderr_text}".strip()
-
-            if stdout_text:
-                print(stdout_text)
-            if stderr_text:
-                print(stderr_text)
-
-            # git commit은 변경사항이 없으면 returncode가 1로 나올 수 있습니다.
-            # 이 경우는 배포 실패가 아니라 "올릴 새 변경사항 없음"으로 처리합니다.
-            if allow_no_changes and result.returncode != 0:
-                no_change_messages = [
-                    "nothing to commit",
-                    "no changes added to commit",
-                    "working tree clean",
-                    "커밋할 사항 없음",
-                    "변경 사항 없음"
-                ]
-                if any(msg in combined_text.lower() for msg in no_change_messages):
-                    print("   └─ Git 커밋할 새 변경사항 없음. push 확인으로 넘어갑니다.")
-                    return result
-
-            if result.returncode != 0:
-                raise RuntimeError(f"Git 명령 실패: {cmd}")
-
-            return result
-
-        run_git_command("git add .")
-        run_git_command('git commit -m "Auto Update: Direct Targets Sync Applied"', allow_no_changes=True)
-        run_git_command("git push")
-        print("🎉 배포가 완전히 완료되었습니다!")
+        deploy_github_pages("Auto Update: Direct Targets Sync Applied")
 
 if __name__ == "__main__":
-    run_direct_archiver()
-    release_lock()
-    sys.exit(0)
+    exit_code = 0
+    try:
+        if recover_git_before_crawl_if_needed():
+            run_direct_archiver()
+        else:
+            # 3회 이상 누적된 Git 오류의 자동 복구까지 실패했을 때만 실패 종료합니다.
+            exit_code = 1
+    finally:
+        # 크롤링·구글 드라이브·Git 배포가 모두 끝난 뒤 락을 해제합니다.
+        # 따라서 실행 중인 첫 작업은 유지되고, 겹쳐 시작된 두 번째 실행만 차단됩니다.
+        release_lock()
+    sys.exit(exit_code)
 
 # 💡 lockonarchiver.py 전체 코드를 완벽하게 대조했습니다.
 # 이 코드는 이전 대수술을 모두 거쳐 어떠한 에러도 내지 않으며, auto_archiver1.py와 공동 DB로 무결성 있게 가동됩니다.
