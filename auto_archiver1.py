@@ -18,7 +18,8 @@ SCOPES = ['https://www.googleapis.com/auth/drive.file']
 BASE_DIR = "./archive"
 CHECKPOINT_FILE = f"{BASE_DIR}/completed_posts.json"
 DCCON_CACHE_FILE = f"{BASE_DIR}/dccon_cache.json"
-LOCK_FILE = f"{BASE_DIR}/crawler.lock"
+# Git 배포가 끝날 때까지 락을 유지하더라도 임시 락 파일이 git add에 포함되지 않도록 .git 내부에 저장합니다.
+LOCK_FILE = "./.git/crawler.lock"
 # ==============================================================================
 
 import os

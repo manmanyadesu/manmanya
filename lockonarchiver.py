@@ -31,7 +31,8 @@ SCOPES = ['https://www.googleapis.com/auth/drive.file']
 BASE_DIR = "./archive"
 CHECKPOINT_FILE = f"{BASE_DIR}/completed_posts.json"
 DCCON_CACHE_FILE = f"{BASE_DIR}/dccon_cache.json"
-LOCK_FILE = f"{BASE_DIR}/crawler.lock"   # ⚠️ 이 파일이 기존 크롤러와의 동시 실행 충돌을 방지합니다.
+# 두 크롤러가 공유하되 Git 배포 대상에는 포함되지 않도록 .git 내부에 임시 락을 저장합니다.
+LOCK_FILE = "./.git/crawler.lock"   # ⚠️ 이 파일이 기존 크롤러와의 동시 실행 충돌을 방지합니다.
 # ==============================================================================
 
 import os
