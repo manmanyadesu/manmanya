@@ -519,10 +519,32 @@ def archive_single_post(post_no, page, drive_service, creds, folder_id, update_c
 
     if not update_comments_only:
         content_area = soup.find("div", class_="write_div")
+
+        # 디시 동영상/외부 플레이어는 정적 아카이브에서 정상 재생되지 않는 경우가 있으므로
+        # 원문 링크 안내문으로 치환
+        if content_area:
+            for media_el in content_area.find_all(["iframe", "video", "embed", "object"]):
+                notice = soup.new_tag("div")
+                notice["style"] = (
+                    "padding:20px; margin:15px 0; "
+                    "border:1px solid #ddd; text-align:center; "
+                    "background:#f8f8f8;"
+                )
+
+                link = soup.new_tag(
+                    "a",
+                    href=target_url,
+                    target="_blank"
+                )
+                link.string = "▶ 동영상은 디시인사이드 원문에서 보기"
+
+                notice.append(link)
+                media_el.replace_with(notice)
+
         img_tags = content_area.find_all("img") if content_area else []
         img_session = requests.Session()
         img_headers = {"User-Agent": "Mozilla/5.0", "Referer": target_url}
-        
+            
         def download_worker(idx, img_el):
             img_url = img_el.get("data-original") or img_el.get("data-src") or img_el.get("src")
             if not img_url: return None
