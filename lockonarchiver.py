@@ -2,7 +2,7 @@
 # [ 사용자 기본 설정 영역 (원하시는 대로 수정 후 사용하세요) ]
 # ==============================================================================
 DEFAULT_GALLERY_ID = "comic_new6"       # 링크가 아닌 '숫자'만 적었을 때 적용할 기본 갤러리 ID
-FORCE_OVERWRITE = False                 # True로 설정 시 이미 수집된 글도 무조건 원본 이미지를 새로 받습니다.
+FORCE_OVERWRITE = True                # True로 설정 시 이미 수집된 글도 무조건 원본 이미지를 새로 받습니다.
 
 # 🆕 기존 만갤6 자료는 숫자 폴더/숫자 JSON 키를 그대로 유지합니다.
 # 나중에 기본 갤러리가 comic_new7 등으로 바뀌더라도 이 값은 comic_new6 그대로 두세요.
@@ -12,13 +12,7 @@ LEGACY_UNPREFIXED_GALLERY_ID = "comic_new6"
 # 양 끝의 세 개짜리 따옴표(""") 공간 안에서 따옴표도, 쉼표도 쓸 필요 없이 주소를 그냥 복사-붙여넣기만 하시면 됩니다.
 TARGET_LINKS_RAW = """
 
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1922297
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1922393
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1922435
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1922914
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1923456
-https://gall.dcinside.com/mgallery/board/view/?id=gundam&no=1780171
-
+hhttps://gall.dcinside.com/board/view/?id=comic_new6&no=6223725&exception_mode=recommend&page=1
 
 """
 
