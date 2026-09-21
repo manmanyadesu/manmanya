@@ -35233,12 +35233,12 @@
         "has_poll": false
     },
     "6276971": {
-        "comment_count": 88,
+        "comment_count": 89,
         "title": "번역) 나에게 트라우마를 준 여자들이 1화",
         "date": "2026.09.20 02:43:39",
-        "views": 8770,
+        "views": 8819,
         "recommend": 51,
-        "live_comment_count": 87,
+        "live_comment_count": 88,
         "comment_id_version": 1,
         "comment_relation_version": 2,
         "image_count": 41,
@@ -35246,12 +35246,12 @@
         "has_poll": false
     },
     "6275880": {
-        "comment_count": 31,
+        "comment_count": 32,
         "title": "번역) 남녀비 1:39 292화[폐기] - 쿠로키 에리카, 추궁당하다",
         "date": "2026.09.20 01:06:58",
-        "views": 7783,
+        "views": 7812,
         "recommend": 99,
-        "live_comment_count": 30,
+        "live_comment_count": 31,
         "comment_id_version": 1,
         "comment_relation_version": 2,
         "image_count": 8,
@@ -35581,6 +35581,32 @@
         "comment_relation_version": 2,
         "image_count": 26,
         "thumbnail": "https://lh3.googleusercontent.com/d/1zejOH_yaZffjqbBydUbUaqMk6izvJG0Z",
+        "has_poll": false
+    },
+    "6274421": {
+        "comment_count": 85,
+        "title": "번역) 꿈 없는 선생님의 진로지도 27화(프로 쇼기 기사 지망생)",
+        "date": "2026.09.19 23:25:21",
+        "views": 9526,
+        "recommend": 120,
+        "live_comment_count": 84,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 20,
+        "thumbnail": "https://lh3.googleusercontent.com/d/1E6_tGtCtMM4GY9hEPm4jMKixoELtfliJ",
+        "has_poll": false
+    },
+    "6271121": {
+        "comment_count": 166,
+        "title": "번역) 꿈 없는 선생님의 진로지도 24화(보육교사 지망생 完)",
+        "date": "2026.09.19 19:28:08",
+        "views": 8373,
+        "recommend": 123,
+        "live_comment_count": 164,
+        "comment_id_version": 1,
+        "comment_relation_version": 2,
+        "image_count": 20,
+        "thumbnail": "https://lh3.googleusercontent.com/d/17WEslkL39WScvTh4nYWjUk7zjyQ0vB8k",
         "has_poll": false
     }
 }
