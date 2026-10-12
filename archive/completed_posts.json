@@ -41363,5 +41363,49 @@
     "mini_post_ids": [
       "1"
     ]
+  },
+  "6633306": {
+    "title": "번역) 폰도카밥 5화",
+    "date": "2026.10.13 08:02:25",
+    "views": 1884,
+    "recommend": 61,
+    "comment_count": 23,
+    "live_comment_count": 21,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 19,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd752c723c4713c2a48c4c9a8ddd151dc94c883c3a14bb9cdd54fb59a176e30b",
+    "has_poll": false,
+    "gallery_id": "comic_new6",
+    "mini_source_hash": "591224d712506d48f81afcd9ccfa71e8e99e1c36402a218556920adda8e7f00b",
+    "mini_main_version": 2,
+    "post_no": "6633306",
+    "archive_key": "6633306",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "2"
+    ]
+  },
+  "6632736": {
+    "title": "번역) 적등 엘레지 슈퍼 1화 (붉은등애가 슈퍼)",
+    "date": "2026.10.13 06:22:56",
+    "views": 4485,
+    "recommend": 60,
+    "comment_count": 59,
+    "live_comment_count": 58,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 36,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd7725713246179b090d176f5ed799d9c4840a8640027d552cd4c08d374e31f2",
+    "has_poll": false,
+    "gallery_id": "comic_new6",
+    "mini_source_hash": "cfe14cec37a66f8f86e24a7d146c00161de79b6c4d12d3c1f14bda8bfe303118",
+    "mini_main_version": 2,
+    "post_no": "6632736",
+    "archive_key": "6632736",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "3"
+    ]
   }
 }
