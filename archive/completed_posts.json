@@ -43878,12 +43878,12 @@
     ]
   },
   "6513316": {
-    "comment_count": 294,
+    "comment_count": 296,
     "title": "번역)트라우마를 준 년들이 힐끔 보고있는데, 유감이지만 '리셋'합니다!",
     "date": "2026.10.05 12:13:25",
-    "views": 28919,
+    "views": 29163,
     "recommend": 162,
-    "live_comment_count": 291,
+    "live_comment_count": 293,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 49,
@@ -43897,7 +43897,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "201"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6512996": {
     "comment_count": 34,
