@@ -40577,14 +40577,24 @@
     "comment_count": 246,
     "title": "번역) 내 사랑을 방해하는 메가스키 15화",
     "date": "2026.09.28 03:01:50",
-    "views": 24314,
-    "recommend": 295,
+    "views": 25095,
+    "recommend": 302,
     "live_comment_count": 243,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 14,
-    "thumbnail": "https://lh3.googleusercontent.com/d/1Jo9ZlGmna4mfofSNpfZTtm2IxswNf3ZL",
-    "has_poll": true
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd73257132411ddc865efca37f421585626f151e19e8ebca10af1fef3117203fcc3da9d39f79022f4fdde08b60f4ad2a33",
+    "has_poll": true,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6399361",
+    "archive_key": "6399361",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "515"
+    ]
   },
   "6398336": {
     "comment_count": 139,
@@ -44049,14 +44059,25 @@
     "comment_count": 133,
     "title": "번역) 나만이 알고 있다 22화",
     "date": "2026.10.07 19:21:44",
-    "views": 12773,
-    "recommend": 146,
-    "live_comment_count": 132,
+    "views": 16225,
+    "recommend": 148,
+    "live_comment_count": 131,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 4,
-    "thumbnail": "https://lh3.googleusercontent.com/d/1sGxd0OxUhXZIW9JbW3SjyYXsYnGPKcjZ",
-    "has_poll": false
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd76237a3146150e83d7ca89cae2a05be05590310f0e5d648b951b30995d43ffc91001403a00bd386a83364b5725fb3d04",
+    "has_poll": false,
+    "gallery_id": "comic_new6",
+    "mini_source_hash": "49f166d9eaab666d8196e9ac1d97d989b5648c77ec632c295111cff3e6b6227c",
+    "mini_main_version": 3,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "post_no": "6549062",
+    "archive_key": "6549062",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "514"
+    ]
   },
   "6548830": {
     "comment_count": 147,
@@ -47625,6 +47646,28 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "509"
+    ]
+  },
+  "6578365": {
+    "title": "번역) 괴롭히고 괴롭혀지고 12화 (개변태보건교사 등장)",
+    "date": "2026.10.09 17:16:52",
+    "views": 11852,
+    "recommend": 177,
+    "comment_count": 105,
+    "live_comment_count": 104,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 20,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd7220743c4510ca721bf67bd76e262f75de1d7b8cb37790774abad9b21d0559c3037227fcfb4eb37aec7a8cf1897bec61",
+    "has_poll": false,
+    "gallery_id": "comic_new6",
+    "mini_source_hash": "c7a9ccd2887221d891be2e5804a8a0fb9cbe7cb5f0f1fa97450592ca7a7df303",
+    "mini_main_version": 3,
+    "post_no": "6578365",
+    "archive_key": "6578365",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "513"
     ]
   }
 }
