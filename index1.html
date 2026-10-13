@@ -68,6 +68,10 @@
         .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 50px; margin-bottom: 30px; flex-wrap: wrap; }
         .page-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .page-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25); }
+        /* 기존 10페이지 이동 버튼은 유지하고, 원하는 페이지 번호로 직접 이동합니다. */
+        .page-jump { flex-basis: 100%; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; color: var(--text-sub); }
+        .page-jump input { width: 85px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--card-bg); color: var(--text-color); font-size: 16px; }
+        .page-jump-status { flex-basis: 100%; text-align: center; font-size: 12px; }
         @media (max-width: 600px) { 
             body { padding: 15px 10px; }
             header h1 { font-size: 20px; }
@@ -356,6 +360,32 @@
                 lastBtn.onclick = () => { currentShelfPage = totalPages; renderBookshelf(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
                 paginationArea.appendChild(lastBtn);
             }
+            // 검색/갤러리 필터를 적용한 결과의 페이지 범위 안에서만 이동합니다.
+            const jump = document.createElement('form');
+            jump.className = 'page-jump';
+            const label = document.createElement('label');
+            label.htmlFor = 'page-jump-number';
+            label.textContent = '페이지 바로 이동';
+            const input = document.createElement('input');
+            input.id = 'page-jump-number'; input.type = 'number'; input.inputMode = 'numeric';
+            input.min = '1'; input.max = String(totalPages); input.step = '1'; input.required = true;
+            input.value = String(currentShelfPage);
+            const range = document.createElement('span'); range.textContent = `/ ${totalPages}페이지`;
+            const go = document.createElement('button'); go.type = 'submit'; go.className = 'page-btn'; go.textContent = '이동';
+            const status = document.createElement('span'); status.className = 'page-jump-status'; status.setAttribute('role', 'status');
+            jump.append(label, input, range, go, status);
+            jump.addEventListener('submit', event => {
+                event.preventDefault();
+                const wanted = Number(input.value);
+                if (!Number.isInteger(wanted) || wanted < 1 || wanted > totalPages) {
+                    status.textContent = `1~${totalPages} 사이의 페이지 번호를 입력해 주세요.`;
+                    input.focus(); return;
+                }
+                currentShelfPage = wanted;
+                renderBookshelf();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            paginationArea.appendChild(jump);
         }
     }
     
