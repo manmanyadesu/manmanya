@@ -40160,14 +40160,24 @@
     "comment_count": 103,
     "title": "번역) 만붕학개론 23~25화",
     "date": "2026.09.23 21:07:30",
-    "views": 13841,
-    "recommend": 149,
+    "views": 16919,
+    "recommend": 150,
     "live_comment_count": 102,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 5,
-    "thumbnail": "https://lh3.googleusercontent.com/d/1rZzsA2hziYut3EI7d04E3RNVFByeAH9K",
-    "has_poll": false
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece218e7a8a50bcec4cc20dd4b513c1111b9fba8ecbbba605ecc41f4ea2bfbbfc0969dab0975eaa25b4ed00a4c93af0dfde",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6331892",
+    "archive_key": "6331892",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "922"
+    ]
   },
   "6331851": {
     "comment_count": 103,
@@ -48778,10 +48788,10 @@
   "6622903": {
     "title": "번역) 매력 무쌍 3화",
     "date": "2026.10.12 15:08:56",
-    "views": 15420,
-    "recommend": 169,
-    "comment_count": 183,
-    "live_comment_count": 181,
+    "views": 17373,
+    "recommend": 180,
+    "comment_count": 186,
+    "live_comment_count": 182,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 30,
@@ -48795,15 +48805,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "1"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6633306": {
     "title": "번역) 폰도카밥 5화",
     "date": "2026.10.13 08:02:25",
-    "views": 9289,
-    "recommend": 139,
-    "comment_count": 83,
-    "live_comment_count": 81,
+    "views": 13867,
+    "recommend": 161,
+    "comment_count": 89,
+    "live_comment_count": 131,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 19,
@@ -48817,15 +48829,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "2"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6632736": {
     "title": "번역) 적등 엘레지 슈퍼 1화 (붉은등애가 슈퍼)",
     "date": "2026.10.13 06:22:56",
-    "views": 11130,
-    "recommend": 106,
-    "comment_count": 117,
-    "live_comment_count": 116,
+    "views": 15655,
+    "recommend": 136,
+    "comment_count": 143,
+    "live_comment_count": 182,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 36,
@@ -48839,7 +48853,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "3"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6632092": {
     "title": "한국보다 가난해진 일본 근황...jpg",
@@ -48866,10 +48882,10 @@
   "6631188": {
     "title": "번역) 나니와 금융도 15화",
     "date": "2026.10.13 02:07:15",
-    "views": 9006,
-    "recommend": 205,
-    "comment_count": 210,
-    "live_comment_count": 209,
+    "views": 12089,
+    "recommend": 243,
+    "comment_count": 216,
+    "live_comment_count": 215,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 18,
@@ -48883,19 +48899,21 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "5"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6630846": {
     "title": "번역) 비키니시티에서 살아남기 7화",
     "date": "2026.10.13 01:27:29",
-    "views": 13104,
-    "recommend": 125,
-    "comment_count": 130,
-    "live_comment_count": 129,
+    "views": 16992,
+    "recommend": 137,
+    "comment_count": 145,
+    "live_comment_count": 143,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 19,
-    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd732276334410d819bc99df6a072c1bd18ff26563281f2b3558177e7b8805f2",
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece248b788f55b84bb60004b34b37185ba9d985396b9eced83cf07c43a16c32cae49c1af79219354408aa3ca7d16fdada64b720239271770843051259a9feaefc0ef573552cf516128ec9e647b4717703649c7774f861c8ea0e811fcebc0b1988",
     "has_poll": true,
     "gallery_id": "comic_new6",
     "mini_source_hash": "3ab040b2de0f2020988276b090b89de9f6ce6d0842ea31e74d0a92c0c6f83af8",
@@ -48905,15 +48923,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "6"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6630291": {
     "title": "번역) 전생 최강 마도사 1화",
     "date": "2026.10.13 00:29:18",
-    "views": 12799,
-    "recommend": 118,
-    "comment_count": 157,
-    "live_comment_count": 156,
+    "views": 18748,
+    "recommend": 147,
+    "comment_count": 177,
+    "live_comment_count": 176,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 49,
@@ -48927,15 +48947,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "7"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6629372": {
     "title": "번역) 혼다 카노코의 책장 속간미정편 2화 (킴벌리 저지 계획)",
     "date": "2026.10.12 23:16:27",
-    "views": 6403,
-    "recommend": 163,
-    "comment_count": 119,
-    "live_comment_count": 118,
+    "views": 7951,
+    "recommend": 177,
+    "comment_count": 126,
+    "live_comment_count": 125,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 12,
@@ -48949,15 +48971,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "8"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6629225": {
     "title": "번역) 저주록 2화 (사치록 작가)",
     "date": "2026.10.12 23:06:13",
-    "views": 13808,
-    "recommend": 357,
-    "comment_count": 234,
-    "live_comment_count": 233,
+    "views": 17017,
+    "recommend": 413,
+    "comment_count": 267,
+    "live_comment_count": 373,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 28,
@@ -48971,15 +48995,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "9"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6628185": {
     "title": "번역) 제물의 반테 6화",
     "date": "2026.10.12 21:51:19",
-    "views": 6430,
-    "recommend": 63,
-    "comment_count": 43,
-    "live_comment_count": 42,
+    "views": 7710,
+    "recommend": 67,
+    "comment_count": 44,
+    "live_comment_count": 43,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 19,
@@ -48993,19 +49019,21 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "10"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6625107": {
     "title": "번역) 남자 금지 세계에서 살아남기 13화",
     "date": "2026.10.12 18:03:18",
-    "views": 20978,
-    "recommend": 178,
-    "comment_count": 146,
-    "live_comment_count": 145,
+    "views": 24333,
+    "recommend": 186,
+    "comment_count": 154,
+    "live_comment_count": 153,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 32,
-    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd792175314311ab1f813321a80589b8ceef8f6651793be135fd4bfcfe7a3af8",
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece278b7b8957b2116398213e56e66597c795ab3b4fdae96a69ac6722a1c55ac74300423bd0a83b60b70d14f5f72621ad9b34e607d25826d015fd6af4f2aaf6e542fbfada509098d14444454bd7374316231bde50f3f97f790b7afc85a24b92c7",
     "has_poll": true,
     "gallery_id": "comic_new6",
     "mini_source_hash": "f37147498aca9959f5fa07ce9025506175582adc23a6820f88e03cef4111d18b",
@@ -49015,19 +49043,21 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "11"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6624932": {
     "title": "번역) 매니저카기 76~78화",
     "date": "2026.10.12 17:48:31",
-    "views": 13943,
-    "recommend": 175,
-    "comment_count": 168,
-    "live_comment_count": 167,
+    "views": 15498,
+    "recommend": 189,
+    "comment_count": 170,
+    "live_comment_count": 169,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 28,
-    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd76267331471389b97bd9adbec12ef40387c93c9bbf6a0bd548d656ca0f2df2",
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2e8c7f8a52be2cb86a406292af2ce80858144d2fde5110bb64361b87cd93e1f3e5dd701952e056ce1c9efc82f85ccf8bcb16553942620c928ed1fc1e5ca6748eca54f72aa8dd6ed30383921e95a9fa3d00188e3a668496931541c0cb700ee0",
     "has_poll": true,
     "gallery_id": "comic_new6",
     "mini_source_hash": "53a3b22452d4f12e6ad0ae9f2d8798d0abf4d16ba0977a0495d72e98fe86d1b0",
@@ -49037,15 +49067,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "12"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6624896": {
     "title": "번역) 너의 머리가 신경쓰여 2화",
     "date": "2026.10.12 17:45:08",
-    "views": 15137,
-    "recommend": 212,
-    "comment_count": 237,
-    "live_comment_count": 236,
+    "views": 17512,
+    "recommend": 228,
+    "comment_count": 255,
+    "live_comment_count": 254,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 21,
@@ -49059,19 +49091,21 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "13"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6624559": {
     "title": "번역) 심폐소생술로 일가족 따먹기 4-2화",
     "date": "2026.10.12 17:19:26",
-    "views": 14804,
-    "recommend": 78,
+    "views": 16498,
+    "recommend": 81,
     "comment_count": 85,
     "live_comment_count": 84,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 15,
-    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd782474314216c2b5e97cd569f2d83537b0375ecbbb6764a2a3947245f31646",
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece208f7a8d52b28a1f675957a3095992f327405142b5bd84c5b4d542078e0a45cd88fb35c7db4c77b753070471e819f08176bad839d1ce138a9a04c2286fac65654735116ee6b1dc8761b02dd43e28ea5220312ca67bd2c08c7102735810dc78",
     "has_poll": true,
     "gallery_id": "comic_new6",
     "mini_source_hash": "697c3ad378abad38494baccc541af53a66699522bc89c408d8cead0398a3f238",
@@ -49081,7 +49115,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "14"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6623454": {
     "title": "번역) 그레이키스의 마계어번역록 5화",
@@ -49108,10 +49144,10 @@
   "6622945": {
     "title": "번역) 패계왕 ~가오가이가 대 베터맨~ 29화",
     "date": "2026.10.12 15:12:48",
-    "views": 4120,
-    "recommend": 68,
-    "comment_count": 71,
-    "live_comment_count": 89,
+    "views": 4729,
+    "recommend": 70,
+    "comment_count": 72,
+    "live_comment_count": 90,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 30,
@@ -49125,7 +49161,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "16"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6622812": {
     "title": "번역) 레지스탕스 아이들 5권: 분열된 국가",
@@ -49152,10 +49190,10 @@
   "6621950": {
     "title": "번역) Sweet Life 2nd 223, 224",
     "date": "2026.10.12 13:37:09",
-    "views": 1587,
-    "recommend": 65,
+    "views": 1798,
+    "recommend": 67,
     "comment_count": 23,
-    "live_comment_count": 22,
+    "live_comment_count": 23,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 21,
@@ -49163,21 +49201,23 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "491a18830e5f9b6a8bfd9a06021111571816cd0215b8c137c3ffd7e519918216",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6621950",
     "archive_key": "6621950",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "18"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6621827": {
     "title": "번역) 나니와 금융도 14화",
     "date": "2026.10.12 13:25:24",
-    "views": 11691,
-    "recommend": 222,
-    "comment_count": 191,
-    "live_comment_count": 190,
+    "views": 12976,
+    "recommend": 229,
+    "comment_count": 195,
+    "live_comment_count": 194,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 18,
@@ -49191,15 +49231,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "19"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6621489": {
     "title": "번역) 나는 포포 4화",
     "date": "2026.10.12 12:53:10",
-    "views": 11238,
-    "recommend": 151,
-    "comment_count": 137,
-    "live_comment_count": 136,
+    "views": 12606,
+    "recommend": 158,
+    "comment_count": 140,
+    "live_comment_count": 196,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 23,
@@ -49207,21 +49249,23 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "9e7dee1ec03db0fe17e54415f9c2ec358c2add08dc1c1e517eac5a7318ba9d87",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6621489",
     "archive_key": "6621489",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "20"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6621256": {
     "title": "번역) 오니마위 6화",
     "date": "2026.10.12 12:30:35",
-    "views": 14146,
-    "recommend": 248,
-    "comment_count": 164,
-    "live_comment_count": 163,
+    "views": 15513,
+    "recommend": 259,
+    "comment_count": 167,
+    "live_comment_count": 165,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 20,
@@ -49235,15 +49279,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "21"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6621211": {
     "title": "번역) 마트캐셔! 23화",
     "date": "2026.10.12 12:26:16",
-    "views": 15986,
-    "recommend": 232,
-    "comment_count": 296,
-    "live_comment_count": 295,
+    "views": 17561,
+    "recommend": 243,
+    "comment_count": 302,
+    "live_comment_count": 527,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 21,
@@ -49257,7 +49303,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "22"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6618657": {
     "title": "번역) 차세대 만화대상 9위 14화(퀴즈 대회)",
@@ -49284,10 +49332,10 @@
   "6617537": {
     "title": "번역) 나니와 금융도 13화",
     "date": "2026.10.12 03:36:54",
-    "views": 10629,
-    "recommend": 213,
-    "comment_count": 181,
-    "live_comment_count": 180,
+    "views": 11932,
+    "recommend": 218,
+    "comment_count": 183,
+    "live_comment_count": 328,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 19,
@@ -49295,35 +49343,39 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "5522c1bb1511760797dd4ce8c5e993f82e9f86e64a11ab1a9bc2c7f3cc500583",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6617537",
     "archive_key": "6617537",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "24"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6615708": {
     "title": "번역) 심폐소생술로 사람을 구했더니 포상으로 딸내미를 줌 4-1화",
     "date": "2026.10.12 00:43:53",
-    "views": 18023,
-    "recommend": 78,
-    "comment_count": 60,
-    "live_comment_count": 78,
+    "views": 19505,
+    "recommend": 82,
+    "comment_count": 61,
+    "live_comment_count": 79,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 16,
     "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd792d723542130c31cdb4fbb3f3ff271935cde13db405376aa4455b19a52289",
-    "has_poll": false,
+    "has_poll": true,
     "gallery_id": "comic_new6",
     "mini_source_hash": "9100fc657a0de71e25d17b4215a78454be9075eef0bc584aadb1fa8843a1a0d2",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6615708",
     "archive_key": "6615708",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "25"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6615241": {
     "title": "번역) 마왕학원 78~80화",
@@ -49372,10 +49424,10 @@
   "6615048": {
     "title": "번역) 나니와 금융도 12화(연대보증인)",
     "date": "2026.10.12 00:00:43",
-    "views": 9813,
-    "recommend": 209,
-    "comment_count": 156,
-    "live_comment_count": 291,
+    "views": 11046,
+    "recommend": 212,
+    "comment_count": 159,
+    "live_comment_count": 158,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 18,
@@ -49383,21 +49435,23 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "7e502c2c63084c15517313b86c7bf5e420d68535491f866bd57e22c723cca06b",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6615048",
     "archive_key": "6615048",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "28"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614820": {
     "title": "번역) 혼다 카노코의 책장 속간미정편 1화 (책을 버려라, 목욕하러가자)",
     "date": "2026.10.11 23:47:36",
-    "views": 7664,
-    "recommend": 157,
-    "comment_count": 112,
-    "live_comment_count": 111,
+    "views": 8396,
+    "recommend": 161,
+    "comment_count": 113,
+    "live_comment_count": 112,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 13,
@@ -49411,15 +49465,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "29"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614754": {
     "title": "번역) 리셋꿉 8화",
     "date": "2026.10.11 23:43:24",
-    "views": 15212,
-    "recommend": 127,
-    "comment_count": 216,
-    "live_comment_count": 215,
+    "views": 16382,
+    "recommend": 132,
+    "comment_count": 226,
+    "live_comment_count": 225,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 35,
@@ -49433,15 +49489,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "30"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614734": {
     "title": "번역) 리셋꿉 7화",
     "date": "2026.10.11 23:41:21",
-    "views": 5975,
-    "recommend": 71,
-    "comment_count": 49,
-    "live_comment_count": 48,
+    "views": 6460,
+    "recommend": 73,
+    "comment_count": 50,
+    "live_comment_count": 49,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 34,
@@ -49455,15 +49513,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "31"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614681": {
     "title": "번역) 리셋꿉 6화",
     "date": "2026.10.11 23:38:37",
-    "views": 5957,
-    "recommend": 71,
-    "comment_count": 49,
-    "live_comment_count": 48,
+    "views": 6413,
+    "recommend": 73,
+    "comment_count": 51,
+    "live_comment_count": 50,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 32,
@@ -49477,15 +49537,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "32"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614650": {
     "title": "번역) 리셋꿉 5화",
     "date": "2026.10.11 23:36:44",
-    "views": 5764,
-    "recommend": 80,
-    "comment_count": 59,
-    "live_comment_count": 58,
+    "views": 6430,
+    "recommend": 84,
+    "comment_count": 62,
+    "live_comment_count": 61,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 33,
@@ -49493,21 +49555,23 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "8e96576f426c83aaf0da1cbba8f8147cee914f7eafb397ad7f0976e7cb423da5",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6614650",
     "archive_key": "6614650",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "33"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614612": {
     "title": "번역) 리셋꿉 4화",
     "date": "2026.10.11 23:34:34",
-    "views": 5984,
-    "recommend": 80,
-    "comment_count": 46,
-    "live_comment_count": 45,
+    "views": 6658,
+    "recommend": 86,
+    "comment_count": 47,
+    "live_comment_count": 46,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 28,
@@ -49515,21 +49579,23 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "f556af85fe72d8583f43244f5285d5cabbc41f332dacd5ab16a70b7fb0fa93e2",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6614612",
     "archive_key": "6614612",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "34"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614592": {
     "title": "번역) 리셋꿉 3화",
     "date": "2026.10.11 23:32:52",
-    "views": 8728,
-    "recommend": 73,
-    "comment_count": 67,
-    "live_comment_count": 66,
+    "views": 9583,
+    "recommend": 75,
+    "comment_count": 68,
+    "live_comment_count": 67,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 42,
@@ -49537,21 +49603,23 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "c7cd7a8625cc93d9b837c6f3609e2d65ada358812497b7a368fb9a85300c044e",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6614592",
     "archive_key": "6614592",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "35"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614590": {
     "title": "번역) 메이드는 사랑하는 하치야 군 29화",
     "date": "2026.10.11 23:32:48",
-    "views": 4456,
-    "recommend": 96,
-    "comment_count": 79,
-    "live_comment_count": 77,
+    "views": 4781,
+    "recommend": 98,
+    "comment_count": 80,
+    "live_comment_count": 78,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 44,
@@ -49565,15 +49633,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "36"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614551": {
     "title": "번역) 리셋꿉 2화",
     "date": "2026.10.11 23:30:50",
-    "views": 17754,
-    "recommend": 87,
-    "comment_count": 97,
-    "live_comment_count": 96,
+    "views": 18984,
+    "recommend": 91,
+    "comment_count": 102,
+    "live_comment_count": 101,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 40,
@@ -49581,21 +49651,23 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "e7a82825e956c55e541de35502a15a56bdad93b67e200c84febc3a23c9288767",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6614551",
     "archive_key": "6614551",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "37"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6614067": {
     "title": "번역) 공짜로 만화를 읽는 방법 [단편]",
     "date": "2026.10.11 22:55:17",
-    "views": 25064,
-    "recommend": 852,
-    "comment_count": 447,
-    "live_comment_count": 446,
+    "views": 27094,
+    "recommend": 904,
+    "comment_count": 454,
+    "live_comment_count": 452,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 46,
@@ -49609,15 +49681,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "38"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6613895": {
     "title": "하루 비키니 대회 막차 탑니다",
     "date": "2026.10.11 22:40:07",
-    "views": 6041,
-    "recommend": 40,
-    "comment_count": 26,
-    "live_comment_count": 25,
+    "views": 6655,
+    "recommend": 41,
+    "comment_count": 27,
+    "live_comment_count": 26,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 1,
@@ -49625,21 +49699,23 @@
     "has_poll": false,
     "gallery_id": "comic_new6",
     "mini_source_hash": "3abf4d1b668677c0d8a680b589e6c7f4ae0c8bd9e5df9e6c76b178843cf6569d",
-    "mini_main_version": 2,
+    "mini_main_version": 3,
     "post_no": "6613895",
     "archive_key": "6613895",
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "39"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6613624": {
     "title": "번역)백합나옴)싱글벙글 우울증갤러리호감고닉 해피쨩 18.5화",
     "date": "2026.10.11 22:21:25",
-    "views": 3890,
-    "recommend": 92,
-    "comment_count": 49,
-    "live_comment_count": 48,
+    "views": 4283,
+    "recommend": 96,
+    "comment_count": 50,
+    "live_comment_count": 49,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 10,
@@ -49653,7 +49729,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "40"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6613242": {
     "title": "번역) 이세계에 카페를 개점했습니다 78화",
@@ -49680,10 +49758,10 @@
   "6612269": {
     "title": "번역) 이루루 스핀오프 21화",
     "date": "2026.10.11 20:41:53",
-    "views": 7392,
-    "recommend": 137,
-    "comment_count": 58,
-    "live_comment_count": 57,
+    "views": 7872,
+    "recommend": 139,
+    "comment_count": 59,
+    "live_comment_count": 58,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 14,
@@ -49697,7 +49775,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "42"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6611582": {
     "title": "번역) 홍차 오브 더 리빙 데드 1,2화",
@@ -49725,10 +49805,10 @@
   "6636068": {
     "title": "번역) 나니와 금융도 16화",
     "date": "2026.10.13 13:25:42",
-    "views": 1723,
-    "recommend": 96,
-    "comment_count": 60,
-    "live_comment_count": 59,
+    "views": 10328,
+    "recommend": 256,
+    "comment_count": 153,
+    "live_comment_count": 152,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 18,
@@ -49742,15 +49822,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "45"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6635810": {
     "title": "번역) 뻐큐버스 4화 (변태란)",
     "date": "2026.10.13 13:02:33",
-    "views": 3512,
-    "recommend": 78,
-    "comment_count": 27,
-    "live_comment_count": 26,
+    "views": 13966,
+    "recommend": 150,
+    "comment_count": 60,
+    "live_comment_count": 59,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 23,
@@ -49764,15 +49846,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "46"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6635763": {
     "title": "번역) 아메미야 양 10화 (능배물 되면서 꿀잼됨)",
     "date": "2026.10.13 12:59:19",
-    "views": 1836,
-    "recommend": 33,
-    "comment_count": 28,
-    "live_comment_count": 27,
+    "views": 10031,
+    "recommend": 61,
+    "comment_count": 50,
+    "live_comment_count": 48,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 14,
@@ -49786,15 +49870,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "47"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6635324": {
     "title": "번역) 호리데이 야스미 트위터 모음 238",
     "date": "2026.10.13 12:22:13",
-    "views": 3646,
-    "recommend": 74,
-    "comment_count": 60,
-    "live_comment_count": 59,
+    "views": 13915,
+    "recommend": 169,
+    "comment_count": 98,
+    "live_comment_count": 97,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 23,
@@ -49808,15 +49894,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "48"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6634236": {
     "title": "번역) 지옥불 서버에서 살아남기 1화",
     "date": "2026.10.13 10:26:25",
-    "views": 13018,
-    "recommend": 165,
-    "comment_count": 165,
-    "live_comment_count": 164,
+    "views": 26648,
+    "recommend": 282,
+    "comment_count": 227,
+    "live_comment_count": 415,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 29,
@@ -49830,15 +49918,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "49"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6632749": {
     "title": "번역) 남녀비 1:39 300화 - 아들이 있는 집안",
     "date": "2026.10.13 06:25:56",
-    "views": 6841,
-    "recommend": 147,
-    "comment_count": 157,
-    "live_comment_count": 156,
+    "views": 17382,
+    "recommend": 244,
+    "comment_count": 239,
+    "live_comment_count": 238,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 14,
@@ -49852,15 +49942,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "50"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6611308": {
     "title": "번역) 마왕님, 리리리벤지! 1화",
     "date": "2026.10.11 19:38:32",
-    "views": 16871,
-    "recommend": 230,
-    "comment_count": 181,
-    "live_comment_count": 180,
+    "views": 18210,
+    "recommend": 247,
+    "comment_count": 184,
+    "live_comment_count": 183,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 33,
@@ -49874,7 +49966,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "51"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6610955": {
     "title": "번역) 심폐소생술의 포상은 쓰리섬 3-2화",
@@ -49923,10 +50017,10 @@
   "6609392": {
     "title": "번역) 꿈 없는 선생님의 진로지도 57화(결혼)",
     "date": "2026.10.11 17:18:48",
-    "views": 6114,
-    "recommend": 145,
-    "comment_count": 159,
-    "live_comment_count": 158,
+    "views": 6894,
+    "recommend": 150,
+    "comment_count": 162,
+    "live_comment_count": 161,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 20,
@@ -49940,15 +50034,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "54"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6609302": {
     "title": "번역) 나니와 금융도 11화",
     "date": "2026.10.11 17:11:51",
-    "views": 12203,
-    "recommend": 223,
-    "comment_count": 159,
-    "live_comment_count": 157,
+    "views": 13405,
+    "recommend": 224,
+    "comment_count": 162,
+    "live_comment_count": 160,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 20,
@@ -49962,15 +50058,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "55"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6608903": {
     "title": "번역) 매력 무쌍 2화",
     "date": "2026.10.11 16:37:51",
-    "views": 17821,
-    "recommend": 177,
-    "comment_count": 192,
-    "live_comment_count": 191,
+    "views": 18926,
+    "recommend": 183,
+    "comment_count": 195,
+    "live_comment_count": 193,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 30,
@@ -49984,7 +50082,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "56"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6608868": {
     "title": "번역) 부캉이 미츠 걸 번외편.jpg",
@@ -50033,10 +50133,10 @@
   "6608759": {
     "title": "번역) 소년vs누나 (단편)",
     "date": "2026.10.11 16:25:09",
-    "views": 19092,
-    "recommend": 337,
-    "comment_count": 123,
-    "live_comment_count": 122,
+    "views": 19862,
+    "recommend": 346,
+    "comment_count": 125,
+    "live_comment_count": 123,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 6,
@@ -50050,15 +50150,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "59"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6608742": {
     "title": "번역) 부캉이 미츠 걸 8화 (처녀복귀) .jpg",
     "date": "2026.10.11 16:23:41",
-    "views": 3196,
-    "recommend": 43,
-    "comment_count": 41,
-    "live_comment_count": 40,
+    "views": 3463,
+    "recommend": 45,
+    "comment_count": 43,
+    "live_comment_count": 42,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 5,
@@ -50072,7 +50174,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "60"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6608705": {
     "title": "번역) 부캉이 미츠 걸 7화.jpg",
@@ -50099,14 +50203,14 @@
   "6607693": {
     "title": "번역) 남자 금지 세계에서 살아남기 12화",
     "date": "2026.10.11 14:55:27",
-    "views": 22409,
-    "recommend": 199,
-    "comment_count": 208,
-    "live_comment_count": 207,
+    "views": 23542,
+    "recommend": 203,
+    "comment_count": 209,
+    "live_comment_count": 208,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 44,
-    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd7925763646120e00093019465a167304c21414955de9e8d3083da50c7ac62151dd75ebef691ace0406bf440b63cf9dbb",
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece248a7a8955bbad1449f89853338dba0d42a35234ae6d984e5aeec8d93bd9bb8212b14b64543f9836811f1573bbcce0c1a3ffb9be4ba9cfc1acb27dd92cfe5c1e2af94ff2fce2befc5b619b19138a8789770f2f0281d8e0b9f9ec94e4758c2a",
     "has_poll": true,
     "gallery_id": "comic_new6",
     "mini_source_hash": "1fd2c40db3adc02319f4c87542588d0fdb16663dd9d7a8bfe5ef331cafb9616b",
@@ -50116,7 +50220,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "62"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6607057": {
     "title": "번역) Sweet Life 2nd 221, 222",
@@ -50165,10 +50271,10 @@
   "6605704": {
     "title": "번역) 보쿠몬! (젖켓몬스터) 2화",
     "date": "2026.10.11 12:06:25",
-    "views": 18150,
-    "recommend": 249,
-    "comment_count": 157,
-    "live_comment_count": 156,
+    "views": 18706,
+    "recommend": 254,
+    "comment_count": 158,
+    "live_comment_count": 157,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 35,
@@ -50182,15 +50288,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "65"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6605192": {
     "title": "번역) 나무위키를 보고 세계최강 76화 + 14권 단행본 자투리 모음",
     "date": "2026.10.11 11:11:26",
-    "views": 9893,
-    "recommend": 152,
-    "comment_count": 147,
-    "live_comment_count": 152,
+    "views": 10153,
+    "recommend": 153,
+    "comment_count": 148,
+    "live_comment_count": 147,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 40,
@@ -50204,19 +50312,21 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "66"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6602650": {
     "title": "번역) 소년의 인버지 4화 (오타 군에게만 상냥한 아야메 양)",
     "date": "2026.10.11 05:35:07",
-    "views": 19143,
-    "recommend": 246,
-    "comment_count": 230,
-    "live_comment_count": 228,
+    "views": 19558,
+    "recommend": 251,
+    "comment_count": 231,
+    "live_comment_count": 227,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 35,
-    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd772271304510d6effc18cc1606827959005b2340c1d70b1fc830dc5d05a7f550a6812716e967dbc066632f0d36449536",
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2f8b7d8054bc5631c0dc4421b777ddd46a0542be3215520ccb0c21adcf378816701172e2abb3297bd47d28befe77e5238d3c5d729c34cdb9f48a5bf292808cf297f9b52d7c24f710b2cdc81f134191e255b7747c032e555146fa332b5fab9d",
     "has_poll": true,
     "gallery_id": "comic_new6",
     "mini_source_hash": "665c5f1688cb7453fce133daf4762b8842126ceb358c7348194b19dc7ea293f6",
@@ -50226,7 +50336,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "67"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6602316": {
     "title": "번역) 캣맘영애 3화",
@@ -50297,10 +50409,10 @@
   "6600191": {
     "title": "번역) 빨리 세계 구하러 가라고 [단편]",
     "date": "2026.10.11 01:12:55",
-    "views": 27577,
-    "recommend": 735,
-    "comment_count": 319,
-    "live_comment_count": 318,
+    "views": 28218,
+    "recommend": 744,
+    "comment_count": 320,
+    "live_comment_count": 319,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 60,
@@ -50315,7 +50427,9 @@
     "mini_post_ids": [
       "71",
       "72"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6599148": {
     "title": "번역) 나니와 금융도 10화",
@@ -50342,8 +50456,8 @@
   "6598459": {
     "title": "번역) 남자 금지 세계에서 살아남기 11화",
     "date": "2026.10.10 23:32:00",
-    "views": 25288,
-    "recommend": 211,
+    "views": 26126,
+    "recommend": 216,
     "comment_count": 186,
     "live_comment_count": 185,
     "comment_id_version": 1,
@@ -50359,19 +50473,21 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "74"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6597801": {
     "title": "번역) 씹부좆해 4화",
     "date": "2026.10.10 22:48:04",
-    "views": 17048,
-    "recommend": 110,
+    "views": 17392,
+    "recommend": 111,
     "comment_count": 96,
     "live_comment_count": 95,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 18,
-    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f828d105aeda1ca0174cbd752374344217e1b0051159e9693a4ae7aab2ee9170f039ad3c5ede01edb599baaa6cf31c3b28a1a3300523b78bf48b6e",
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece20887c8e51b319ca4dcf2d9be69c38d1790feb6cc9c016cc5174c918aa0eb036b06c1af84c63461bc6079f237b5d88ef397eb061041ba4872cb784db2df6c22d4d5d91c3f64f2c74c9ccd25f6bad4c260649770a58495718c67a88808ecd8f",
     "has_poll": true,
     "gallery_id": "comic_new6",
     "mini_source_hash": "e86bfabf0341e9460be06a10adea34079368afa6f6ad23be8a8844b4ba383ebe",
@@ -50381,15 +50497,17 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "75"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6596669": {
     "title": "번역) 나니와 금융도 9화(헌팅)",
     "date": "2026.10.10 21:24:42",
-    "views": 11073,
-    "recommend": 252,
-    "comment_count": 155,
-    "live_comment_count": 154,
+    "views": 11622,
+    "recommend": 253,
+    "comment_count": 156,
+    "live_comment_count": 155,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 18,
@@ -50403,7 +50521,9 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "76"
-    ]
+    ],
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false
   },
   "6596655": {
     "title": "번역) 이세계에 카페를 개점했습니다 77화",
@@ -51463,6 +51583,650 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "732"
+    ]
+  },
+  "6652977": {
+    "title": "번역) 매력 무쌍 5화",
+    "date": "2026.10.14 16:38:00",
+    "views": 4710,
+    "recommend": 103,
+    "comment_count": 169,
+    "live_comment_count": 167,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 28,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece218b7d8157b940e3f10f656341f3f012a1d3baff23ebc1891477c0fffec9aaa8d05236047273f7231fd6ec51cdb7cd16",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6652977",
+    "archive_key": "6652977",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "923"
+    ]
+  },
+  "6651814": {
+    "title": "번역) Sweet Life 2nd 227, 228",
+    "date": "2026.10.14 14:38:15",
+    "views": 800,
+    "recommend": 48,
+    "comment_count": 18,
+    "live_comment_count": 17,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 24,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece23887c8d53bc1539cce976768fe38e8379b64e6a9ef0968a65ad1c85492e5efaa27144cb920aa6194b851dc5b703ccfc",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6651814",
+    "archive_key": "6651814",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "924"
+    ]
+  },
+  "6651227": {
+    "title": "번역) 나니와 금융도 19화",
+    "date": "2026.10.14 13:39:22",
+    "views": 6350,
+    "recommend": 203,
+    "comment_count": 159,
+    "live_comment_count": 158,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 16,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece21897c8f55b99f18425daff57574afe7ef222710cb1047979d99b2568a5bffcb14d935b66228ec4639b3fe2a28c8059b",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6651227",
+    "archive_key": "6651227",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "925"
+    ]
+  },
+  "6651198": {
+    "title": "번역) 꿈 없는 선생님의 진로지도 59화(결혼)",
+    "date": "2026.10.14 13:35:33",
+    "views": 3725,
+    "recommend": 107,
+    "comment_count": 134,
+    "live_comment_count": 133,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 21,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece218f768d57b9ec2d271f6b77f0c5c7a15a97e06b66a134ae09f9620fd45891d84e3ae5f8d8525259c405f2c81b8f22c2",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6651198",
+    "archive_key": "6651198",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "926"
+    ]
+  },
+  "6650511": {
+    "title": "번역) 1티어 4자매는 나 없이 살 수 없어 4-2화",
+    "date": "2026.10.14 12:36:17",
+    "views": 8728,
+    "recommend": 86,
+    "comment_count": 53,
+    "live_comment_count": 52,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 29,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2580788e51b34b1aa453e1c92fb18eb02b235a50ae34584c8cbb30742a4d9b015b66a5c1a39e4fe284cf3b9611a54f57",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6650511",
+    "archive_key": "6650511",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "927"
+    ]
+  },
+  "6650107": {
+    "title": "번역) 생구멍 188화 (초처녀)",
+    "date": "2026.10.14 12:02:14",
+    "views": 17180,
+    "recommend": 192,
+    "comment_count": 208,
+    "live_comment_count": 207,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 16,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece258e778950bfe3752549011c4df7d495dc00440cbda130d05d781db849afb3ed91a06ae5181d2f80c44b8447193ab19b",
+    "has_poll": true,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6650107",
+    "archive_key": "6650107",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "928"
+    ]
+  },
+  "6649444": {
+    "title": "번역) 나니와 금융도 18화",
+    "date": "2026.10.14 10:54:42",
+    "views": 7062,
+    "recommend": 201,
+    "comment_count": 163,
+    "live_comment_count": 162,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 16,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2e8a788e54b93cbd58d66820acb1f377109da2e9c65a78d30478ed5c89324e3f061ec2af651e1a90628afe29a64fab7b",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6649444",
+    "archive_key": "6649444",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "929"
+    ]
+  },
+  "6648441": {
+    "title": "번역) 지옥에서 살아남기 2화 (목욕)",
+    "date": "2026.10.14 08:59:12",
+    "views": 15697,
+    "recommend": 153,
+    "comment_count": 163,
+    "live_comment_count": 162,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 27,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2f8b788c56b2c02b292727a71086ebb87930157c712320c5be1d30e4a3d8d6918d872031e3a84512238c38fb015b8f4c",
+    "has_poll": true,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6648441",
+    "archive_key": "6648441",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "930"
+    ]
+  },
+  "6645765": {
+    "title": "번역) 로또☆바보☆걸 60화",
+    "date": "2026.10.14 01:54:39",
+    "views": 7160,
+    "recommend": 146,
+    "comment_count": 103,
+    "live_comment_count": 102,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 16,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece248d7d8e50bf930e04c681422e747c657e38f42a75dede37a475678759ebcc2d33a1af0a23b0f06e34b9daeebe40000f",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6645765",
+    "archive_key": "6645765",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "931"
+    ]
+  },
+  "6645610": {
+    "title": "번역) 만순이 32화",
+    "date": "2026.10.14 01:39:54",
+    "views": 18071,
+    "recommend": 441,
+    "comment_count": 459,
+    "live_comment_count": 458,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 24,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2e817b8f57bb8dd593c9c20640a81b118a2acb52c6585125e2ec28eefca555e157a7ff13a21371bf657d38dde526fbd9",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6645610",
+    "archive_key": "6645610",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "932"
+    ]
+  },
+  "6645426": {
+    "title": "번역) 단둘이 버스 49화",
+    "date": "2026.10.14 01:22:02",
+    "views": 10784,
+    "recommend": 247,
+    "comment_count": 129,
+    "live_comment_count": 128,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 21,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece278c7d8054b8997e6946c9e4d34d55b5a8aac3e57c4d03c063eb0d94763b61958ff3149e9c0edb37ef974176aaf9bb0e",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6645426",
+    "archive_key": "6645426",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "933"
+    ]
+  },
+  "6644707": {
+    "title": "번역)미정갤 누나 23화",
+    "date": "2026.10.14 00:25:04",
+    "views": 12273,
+    "recommend": 208,
+    "comment_count": 118,
+    "live_comment_count": 117,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 25,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2f8d788a53b2089b9f5e7e88f370a28936d0de2f8851c9373df9d95dbba58560dbc8bf2258fd81db362ce36102484cc5",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6644707",
+    "archive_key": "6644707",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "934"
+    ]
+  },
+  "6643469": {
+    "title": "번역) 실과 갑옷 3화",
+    "date": "2026.10.13 22:51:51",
+    "views": 13398,
+    "recommend": 218,
+    "comment_count": 103,
+    "live_comment_count": 102,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 30,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece278f7d8855bf06c5bb686989d8ac59aa6c30ff56826c0c5b4fc0187a5c2d74c30134e020cbabce20178c754df9125564",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6643469",
+    "archive_key": "6643469",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "935"
+    ]
+  },
+  "6643277": {
+    "title": "번역) 마왕님, 리리리벤지! 2화",
+    "date": "2026.10.13 22:39:34",
+    "views": 11836,
+    "recommend": 159,
+    "comment_count": 97,
+    "live_comment_count": 96,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 26,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece248f768d52bb4cb4cd440dc0a90b89a8f2b1ef97f2390b7f78c91205e96e3bf1d57a98de694d800c31eb2e9b1515bc2f",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6643277",
+    "archive_key": "6643277",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "936"
+    ]
+  },
+  "6643215": {
+    "title": "번역) 막 없는 사샤님의 질로지도 103화 (NTR?)",
+    "date": "2026.10.13 22:36:07",
+    "views": 14549,
+    "recommend": 94,
+    "comment_count": 120,
+    "live_comment_count": 119,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 17,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2e81778054baada214f103821cb8a198b83967df6b7a41dc2aa4834e786a7a367d6622f20baa61e71ff865a418603b32",
+    "has_poll": true,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6643215",
+    "archive_key": "6643215",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "937"
+    ]
+  },
+  "6642955": {
+    "title": "번역) 혼다 카노코의 책장 속간미정편 3화 (오메가별의 유해 도서)",
+    "date": "2026.10.13 22:15:46",
+    "views": 5629,
+    "recommend": 171,
+    "comment_count": 122,
+    "live_comment_count": 121,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 12,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2289778056b3d8bd481896267c587d0090053330362aef74d1ce3de53fab7d977fe532a0c2683e737e753160bc288f19",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6642955",
+    "archive_key": "6642955",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "938"
+    ]
+  },
+  "6642436": {
+    "title": "번역) 전생 최강 마도사 2화",
+    "date": "2026.10.13 21:35:27",
+    "views": 11760,
+    "recommend": 154,
+    "comment_count": 121,
+    "live_comment_count": 120,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 39,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2081778954ba7cd0da48f4f2d8d92be5dac2caf37800e6ad2c73b8320af16afadb3bd748402563b3abce132e8a4692b9",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6642436",
+    "archive_key": "6642436",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "939"
+    ]
+  },
+  "6642138": {
+    "title": "번역) 아무하고나 자는 아가와 115화 (노콘)",
+    "date": "2026.10.13 21:10:44",
+    "views": 23587,
+    "recommend": 173,
+    "comment_count": 272,
+    "live_comment_count": 269,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 18,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2e807f8c55be2452a7d7a851b4415793cbeda85e2cd3e53dcc04afe6e3ddda2221d2aaddfc017c3f442d53f9029c3f51",
+    "has_poll": true,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6642138",
+    "archive_key": "6642138",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "940"
+    ]
+  },
+  "6641329": {
+    "title": "번역) 패계왕 ~가오가이가 대 베터맨~ 30화",
+    "date": "2026.10.13 20:07:32",
+    "views": 3582,
+    "recommend": 59,
+    "comment_count": 41,
+    "live_comment_count": 40,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 35,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2589788954b2a447db23f744c7afc0025aa5a36b98bf6c36d037c470cc5e79b612f8f11501c5168557e58c27724ab621",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6641329",
+    "archive_key": "6641329",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "941"
+    ]
+  },
+  "6640342": {
+    "title": "번역) 크아아악~!! 나 극악영애라고~!! 18화",
+    "date": "2026.10.13 18:53:40",
+    "views": 11179,
+    "recommend": 139,
+    "comment_count": 84,
+    "live_comment_count": 83,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 25,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece238f768a56ba54436985e6f154fa436248adaba6ebfc0ec255f98c84898abdb73b92f8daa7d538de013730309efab810",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6640342",
+    "archive_key": "6640342",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "942"
+    ]
+  },
+  "6640008": {
+    "title": "번역) 개미와 벌 13화 (혐 주의)",
+    "date": "2026.10.13 18:29:45",
+    "views": 13265,
+    "recommend": 171,
+    "comment_count": 86,
+    "live_comment_count": 85,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 21,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2580788d5ab2ee886d00e362023c833342d8d0aba52b6370ffdc2ca1e12a13880ad4d229be70516825951cc71cb5383a",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6640008",
+    "archive_key": "6640008",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "943"
+    ]
+  },
+  "6640001": {
+    "title": "번역) 슬랩샷 걸즈 1화",
+    "date": "2026.10.13 18:29:24",
+    "views": 8283,
+    "recommend": 126,
+    "comment_count": 82,
+    "live_comment_count": 81,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 37,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece238c768f57bb50861eaf12c95dbc78f5d9b07847cd393d625945d53267999652a1ce0c537efb68db1cc446e3dbf1b07d",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6640001",
+    "archive_key": "6640001",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "944"
+    ]
+  },
+  "6638395": {
+    "title": "번역) 뻐큐버스 5화 (젖탱이란)",
+    "date": "2026.10.13 16:36:43",
+    "views": 16005,
+    "recommend": 122,
+    "comment_count": 71,
+    "live_comment_count": 110,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 20,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2e8e7f8c56bb6ed151a8a23d6fb51e495c9dec8b5ebe66aacea2915fcca0644612a0ebb7c86a74a483e70af4af422445",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6638395",
+    "archive_key": "6638395",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "945"
+    ]
+  },
+  "6637039": {
+    "title": "번역) 매력 무쌍 4화",
+    "date": "2026.10.13 14:59:45",
+    "views": 15730,
+    "recommend": 160,
+    "comment_count": 228,
+    "live_comment_count": 227,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 31,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece25897d8b50b880aef041206a382e7d8541beaa7159a4e7eaad7502602ff381be0ffb2f6ac3ffbb36594043be8bb610c7",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6637039",
+    "archive_key": "6637039",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "946"
+    ]
+  },
+  "6636915": {
+    "title": "번역) 나니와 금융도 17화",
+    "date": "2026.10.13 14:50:10",
+    "views": 12486,
+    "recommend": 235,
+    "comment_count": 236,
+    "live_comment_count": 423,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 22,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2180788e51b8ad09e85c3d04d4e1dfbd43f25a04f52eff0bfb02c216cc9f73b3f1084f4b16c87350e60cc0ff214a39e6",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6636915",
+    "archive_key": "6636915",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "947"
+    ]
+  },
+  "6636700": {
+    "title": "번역) Sweet Life 2nd 225, 226",
+    "date": "2026.10.13 14:31:13",
+    "views": 1641,
+    "recommend": 58,
+    "comment_count": 14,
+    "live_comment_count": 13,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 24,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2f80768154b952744865306785ebf85c2f7aebd0d8ceea14e0b54898308b8369cfb421519f709e09067564ed068bd061",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6636700",
+    "archive_key": "6636700",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "948"
+    ]
+  },
+  "6634971": {
+    "title": "번역) 꿈 없는 선생님의 진로지도 58화(결혼)",
+    "date": "2026.10.13 11:50:01",
+    "views": 6014,
+    "recommend": 132,
+    "comment_count": 222,
+    "live_comment_count": 221,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 20,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece20887c8155b3b0015cdb8444b45673b8cac3eec4b2288708d6f2941617d382921eb25a24e4a55cc484a6162f7e37bb44",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6634971",
+    "archive_key": "6634971",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "949"
+    ]
+  },
+  "6634633": {
+    "title": "번역) 이세계에 카페를 개점했습니다 79화",
+    "date": "2026.10.13 11:13:11",
+    "views": 2110,
+    "recommend": 38,
+    "comment_count": 34,
+    "live_comment_count": 33,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 22,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3ff67d622946e3287f0dece2f817b8f55b3492e3ac63de2cb98c8ada5801799932400eee84e11bbfe09e2e5d603910a78c2ca58da3208d86abeffcd",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6634633",
+    "archive_key": "6634633",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "950"
     ]
   }
 }
