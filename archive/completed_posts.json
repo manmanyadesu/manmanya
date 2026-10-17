@@ -54291,5 +54291,28 @@
     "mini_post_ids": [
       "1123"
     ]
+  },
+  "6690473": {
+    "title": "번역) 도시전설 청소부 6화 (캣맘)",
+    "date": "2026.10.17 10:08:12",
+    "views": 852,
+    "recommend": 49,
+    "comment_count": 21,
+    "live_comment_count": 20,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 27,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3fc86f3e3da9d213aa037bd31172324ba2230188e553a0691ea8ac33a2d62932c69fa57bebe3c9de6c7be7e477af25ce7f528c34000e6a3a68a2694",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6690473",
+    "archive_key": "6690473",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "1132"
+    ]
   }
 }
