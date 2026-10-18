@@ -45360,14 +45360,53 @@
     "comment_count": 139,
     "title": "번역) 내 사랑을 방해하는 메가스키 14화",
     "date": "2026.09.28 01:38:15",
-    "views": 23190,
-    "recommend": 224,
-    "live_comment_count": 137,
+    "views": 23977,
+    "recommend": 228,
+    "live_comment_count": 136,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 12,
-    "thumbnail": "https://lh3.googleusercontent.com/d/17xZtfAXAPCUwuPzdsSLpkpx-drsBcCzF",
-    "has_poll": true
+    "thumbnail": "https://i.ibb.co/Qz5hpxm/comic-new6-6398336-853720eaae83.jpg",
+    "has_poll": true,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "mini_source_image_urls": {
+      "images/manga_7_773e2a627c76576a.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831da06a276e56e23d858eb70c710dfeddb04dbe2138a95ef",
+      "images/manga_3_9e70caff8dd4764b.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831dc06fe761806e0a32d13edfa86b7f9b259ca008ca4415d",
+      "images/manga_8_fd496d99d768a1ba.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831da054c3ce1b102c55db24aa36420e92f5df595054fbe37",
+      "images/manga_9_7b52636ab485b8a3.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831d90354a4f5c1d27070b14aab03932fff159c3a738bc9b8",
+      "images/manga_5_876d6c8953a8769a.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831dc039a4b759bf5d812239a28fcd01c39aecc5191524bd2",
+      "images/manga_2_a061e94fe1fcbe3e.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831dc02b2d84fd03c6fbe6b3152d74fe5b7e3f3a1b544c453&3",
+      "images/manga_10_55d5db572e761704.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831dc086a675b7108941cec8b700d3c3c9e158f8ec268994f",
+      "images/manga_1_853720eaae83b1e3.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831da011cdc6cd08e193eec9c63a955f1897c649130f60f13&3",
+      "images/manga_11_69a8241f13fc3774.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831da0350d95f9b40880624ca2890334aa546d0c089e7652d",
+      "images/manga_12_2636a6184306606a.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831d802ff48096fbebc9005513b51b1d0c6dee94158524dd9",
+      "images/manga_4_05e1446201dfabc5.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831d909cad080aee17c9027da86ce51c13522d6262130ecdb",
+      "images/manga_6_535ba069a5e1aaea.jpg": "https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831df0767778779b8a420a4e5badd6ec80179377352369034"
+    },
+    "mini_source_image_html": {
+      "images/manga_7_773e2a627c76576a.jpg": "<img alt=\"24f08474b19c28a8699fe8b115ef046c8c9fbd50ca2b\" class=\"lazy\" data-fileno=\"5549422\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831da06a276e56e23d858eb70c710dfeddb04dbe2138a95ef\"/>",
+      "images/manga_3_9e70caff8dd4764b.jpg": "<img alt=\"24f08474b59c28a8699fe8b115ef046cb004b2fbb364\" class=\"lazy\" data-fileno=\"5549418\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831dc06fe761806e0a32d13edfa86b7f9b259ca008ca4415d\"/>",
+      "images/manga_8_fd496d99d768a1ba.jpg": "<img alt=\"24f08474b09c28a8699fe8b115ef046c0a9de7cf0fd4\" class=\"lazy\" data-fileno=\"5549423\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831da054c3ce1b102c55db24aa36420e92f5df595054fbe37\"/>",
+      "images/manga_9_7b52636ab485b8a3.jpg": "<img alt=\"24f08474b39c28a8699fe8b115ef046c2a42da792b13\" class=\"lazy\" data-fileno=\"5549424\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831d90354a4f5c1d27070b14aab03932fff159c3a738bc9b8\"/>",
+      "images/manga_5_876d6c8953a8769a.jpg": "<img alt=\"24f08474b79c28a8699fe8b115ef046c7f7e3fcbf5d7\" class=\"lazy\" data-fileno=\"5549420\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831dc039a4b759bf5d812239a28fcd01c39aecc5191524bd2\"/>",
+      "images/manga_2_a061e94fe1fcbe3e.jpg": "<img alt=\"24f08477bc9c28a8699fe8b115ef046ceab596abc89b\" data-fileno=\"5549417\" fetchpriority=\"high\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831dc02b2d84fd03c6fbe6b3152d74fe5b7e3f3a1b544c453&amp;3\"/>",
+      "images/manga_10_55d5db572e761704.jpg": "<img alt=\"24f08474b29c28a8699fe8b115ef04643318940687\" class=\"lazy\" data-fileno=\"5549425\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831dc086a675b7108941cec8b700d3c3c9e158f8ec268994f\"/>",
+      "images/manga_1_853720eaae83b1e3.jpg": "<img alt=\"24f08477bd9c28a8699fe8b115ef046cc5f4f1d467dd\" data-fileno=\"5549416\" fetchpriority=\"high\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831da011cdc6cd08e193eec9c63a955f1897c649130f60f13&amp;3\"/>",
+      "images/manga_11_69a8241f13fc3774.jpg": "<img alt=\"24f08474bd9c28a8699fe8b115ef046407766eee7f\" class=\"lazy\" data-fileno=\"5549426\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831da0350d95f9b40880624ca2890334aa546d0c089e7652d\"/>",
+      "images/manga_12_2636a6184306606a.jpg": "<img alt=\"24f08474bc9c28a8699fe8b115ef046cea0c4d090e1d\" class=\"lazy\" data-fileno=\"5549427\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831d802ff48096fbebc9005513b51b1d0c6dee94158524dd9\"/>",
+      "images/manga_4_05e1446201dfabc5.jpg": "<img alt=\"24f08474b49c28a8699fe8b115ef04643a365ef304\" class=\"lazy\" data-fileno=\"5549419\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831d909cad080aee17c9027da86ce51c13522d6262130ecdb\"/>",
+      "images/manga_6_535ba069a5e1aaea.jpg": "<img alt=\"24f08474b69c28a8699fe8b115ef046cd9c40a56ea26\" class=\"lazy\" data-fileno=\"5549421\" src=\"https://dcimg4.dcinside.co.kr/viewimage.php?id=2eb2dd2fe6ed36a379e9&amp;no=24b0d769e1d32ca73fe782fa11d02831b9aa83954b71cedd5ba4b6e67dc9c345f875ee2c6d22a3db1f9ade10c831df0767778779b8a420a4e5badd6ec80179377352369034\"/>"
+    },
+    "post_no": "6398336",
+    "archive_key": "6398336",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "1162"
+    ],
+    "mini_external_only_parts": []
   },
   "6398110": {
     "comment_count": 39,
@@ -54594,6 +54633,30 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "1166"
+    ],
+    "mini_external_only_parts": []
+  },
+  "6717764": {
+    "title": "번역) 나니와 금융도 30화(파멸의 서곡)",
+    "date": "2026.10.19 01:35:26",
+    "views": 306,
+    "recommend": 35,
+    "comment_count": 26,
+    "live_comment_count": 25,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 16,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a3f2af16e84612346c7c01d9844eadf6ecfde49a9862b093349a41afdf6edfd1ffd4ab08091a220baff27c53ad7de48d4e11eb9bb2c12c166cbde89a",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6717764",
+    "archive_key": "6717764",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "1167"
     ],
     "mini_external_only_parts": []
   }
