@@ -57393,10 +57393,10 @@
   "6780335": {
     "title": "번역) 삼대남과 얀데레 1화",
     "date": "2026.10.23 17:54:52",
-    "views": 2278,
-    "recommend": 63,
-    "comment_count": 64,
-    "live_comment_count": 63,
+    "views": 6907,
+    "recommend": 130,
+    "comment_count": 117,
+    "live_comment_count": 116,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 34,
@@ -57603,6 +57603,78 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "1297"
+    ],
+    "mini_external_only_parts": []
+  },
+  "6778319": {
+    "title": "번역) 나니와 금융도 41화",
+    "date": "2026.10.23 14:48:27",
+    "views": 5644,
+    "recommend": 146,
+    "comment_count": 132,
+    "live_comment_count": 131,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 16,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a0f886065981c4c89446666ab799851f5f9de4cb3d8524ed0e98a4ef378a33710bf50d53577147750208235f7462df9f0034a27acb2bbbc7b142645a",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6778319",
+    "archive_key": "6778319",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "1298"
+    ],
+    "mini_external_only_parts": []
+  },
+  "6777638": {
+    "title": "번역) 혼다 카노코의 책장 속간미정편 13화 (속 · 귀 없는 호이치)",
+    "date": "2026.10.23 13:38:37",
+    "views": 1958,
+    "recommend": 105,
+    "comment_count": 66,
+    "live_comment_count": 65,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 12,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a0f886065981c4c89446666ab49e8812569d2bfcfd4764bfd8fb87d259b028251a1d44a44c125101179b8eaf09ed8fa298841a2bed494db8706fff29",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6777638",
+    "archive_key": "6777638",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "1299"
+    ],
+    "mini_external_only_parts": []
+  },
+  "6780463": {
+    "title": "번역) 【가챠】로 이세계 전생 무쌍 22,23화 (암컷 앰버 어흐)",
+    "date": "2026.10.23 18:06:33",
+    "views": 2599,
+    "recommend": 71,
+    "comment_count": 49,
+    "live_comment_count": 48,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 35,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0404a0f886065981c4c89446666ab99d891a5f950c51ca7bb4253a45344a58a9d20f452f7d3bd6543d72114db3f21f76e40ad8f46e6fe1c8e0a292e34f84",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "6780463",
+    "archive_key": "6780463",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "1300"
     ],
     "mini_external_only_parts": []
   }
