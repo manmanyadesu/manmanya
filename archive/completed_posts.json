@@ -62722,5 +62722,29 @@
       "1519"
     ],
     "mini_external_only_parts": []
+  },
+  "bocchi_the_rock_1928312": {
+    "title": "번역) 봇치더락 99화",
+    "date": "2026.10.21 00:19:22",
+    "views": 3286,
+    "recommend": 60,
+    "comment_count": 33,
+    "live_comment_count": 32,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 14,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce782fa1bd8233c89209f10892e9cfc81b6b14a0504a2f9f35490f0a4ac18964bcf68583c543c18d8de4e055e8361baa6333c6d14ffc9f6560d9358c632b0d7e8fed664dca43304b0918639a7e7dbc3f3ca",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "bocchi_the_rock",
+    "mini_main_version": 3,
+    "post_no": "1928312",
+    "archive_key": "bocchi_the_rock_1928312",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "1520"
+    ],
+    "mini_external_only_parts": []
   }
 }
