@@ -78340,14 +78340,14 @@
   "7203989": {
     "title": "번역) 혼다 카노코의 책장 괴제십오선상편 11화 (치즈맨)",
     "date": "2026.11.22 20:46:31",
-    "views": 2913,
-    "recommend": 92,
-    "comment_count": 69,
-    "live_comment_count": 68,
+    "views": 3608,
+    "recommend": 102,
+    "comment_count": 83,
+    "live_comment_count": 82,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 14,
-    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce783fa1bd8233cbf7a36b0e27e9e31ed210c6ad73b8513fa1631a63a2e3806dd86d5eecc7e10e6f3352adb39520e5fb8ff2492cb607f13184241958bf8acac22b5d6a59610fd51f670793c23dcf20c5489d8fb93647d9e09e6330b6f2821ba2d4ed5ac8dcc0b8980ef3c74f27df5924ac57ede488c9219e88267a91ca764db9e",
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce783fa1bd8233cbf7a36b0e27e9e31ed210c6ad73b8513fa1631a63a2e3806dd86d7e8c87d10e0b90553586cd05c830e62136a82f085b3bcfc4c3a740bfae9e7a23cec6bc5d120347dc22fe0d673b2e1a7909645021f2053de43a6d65d566664edc967c6833ddc86fa04727acfadd482e2810c82c43871669d4ba9bcb0bf3413",
     "has_poll": false,
     "mini_incomplete_body": false,
     "mini_incomplete_comments": false,
@@ -78796,10 +78796,10 @@
   "7217223": {
     "title": "번역) 판타즈마 릴리 오리지널 손번역판 26화",
     "date": "2026.11.23 19:40:31",
-    "views": 1419,
-    "recommend": 63,
-    "comment_count": 51,
-    "live_comment_count": 50,
+    "views": 2403,
+    "recommend": 84,
+    "comment_count": 62,
+    "live_comment_count": 61,
     "comment_id_version": 1,
     "comment_relation_version": 2,
     "image_count": 11,
@@ -79222,6 +79222,30 @@
     "mini_gallery_id": "manasuki",
     "mini_post_ids": [
       "2226"
+    ],
+    "mini_external_only_parts": []
+  },
+  "7211877": {
+    "title": "번역) 나니와 금융도 145~146화",
+    "date": "2026.11.23 11:25:35",
+    "views": 6561,
+    "recommend": 212,
+    "comment_count": 149,
+    "live_comment_count": 147,
+    "comment_id_version": 1,
+    "comment_relation_version": 2,
+    "image_count": 32,
+    "thumbnail": "https://dcimg7.dcinside.co.kr/viewimage.php?id=20b4942be4dc39b57bb4df&no=24b0d769e1d32ca73ce783fa1bd8233cbf7a36b0e27e9e31ed210c6ad73b8513fa1631a63a2e3806dd86d8eacc7712e303c6199b5203d2da92b71dd32cd45f1e1b555d70236ce22074ef695ba02ca475926d44b2bd891400e7ef",
+    "has_poll": false,
+    "mini_incomplete_body": false,
+    "mini_incomplete_comments": false,
+    "gallery_id": "comic_new6",
+    "mini_main_version": 3,
+    "post_no": "7211877",
+    "archive_key": "7211877",
+    "mini_gallery_id": "manasuki",
+    "mini_post_ids": [
+      "2227"
     ],
     "mini_external_only_parts": []
   }
