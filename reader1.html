@@ -195,6 +195,22 @@
 
             if (!iframeDocument) return;
 
+            // 기존 저장 글도 재수집 없이 댓글 디시콘의 PC 403 주소를 보정합니다.
+            // 본문/댓글 사진/외부 호스팅은 변경하지 않고 디시콘 파일 ID는 유지합니다.
+            function fixCommentDcconUrls() {
+                iframeDocument.querySelectorAll('.comment-content-box img[src]').forEach(image => {
+                    try {
+                        const url = new URL(image.getAttribute('src'), iframeDocument.baseURI);
+                        if (url.protocol !== 'https:' || url.pathname !== '/dccon.php' || !url.search ||
+                            !/^(?:dcimg|dccdn)\d+\.dcinside\.(?:com|co\.kr)$/.test(url.hostname) ||
+                            url.hostname === 'dcimg4.dcinside.co.kr') return;
+                        url.host = 'dcimg4.dcinside.co.kr';
+                        image.src = url.href;
+                    } catch (_) { /* 로컬/잘못된 주소는 기존 표시를 유지합니다. */ }
+                });
+            }
+            fixCommentDcconUrls();
+
             // iframe이 다시 로딩되는 경우 같은 스타일이 중복 추가되지 않도록 방지합니다.
             if (iframeDocument.getElementById('reader-mobile-pagination-fix')) {
                 return;
@@ -279,7 +295,10 @@
             }
 
             // 댓글 렌더링으로 DOM 높이가 달라지는 경우를 감시합니다.
-            const mutationObserver = new MutationObserver(syncIframeHeight);
+            const mutationObserver = new MutationObserver(() => {
+                fixCommentDcconUrls();
+                syncIframeHeight();
+            });
             if (iframeDocument.body) {
                 mutationObserver.observe(iframeDocument.body, {
                     childList: true,
